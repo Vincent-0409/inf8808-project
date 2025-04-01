@@ -15,6 +15,6 @@ import { HeatmapComponent } from './heatmap/heatmap.component';
     AppRoutingModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent, HeatmapComponent]
 })
 export class AppModule { }
