@@ -102,4 +102,62 @@ export class DataPreprocessingService {
       pointsPerGame: (player.points || 0) / gamesPlayed
     };
   }
+
+
+  // for heatmap
+  filterGoalies(players: DraftPlayer[]): DraftPlayer[] {
+    return players.filter(p => p.position !== 'G');
+  }
+
+  // for heatmap
+  groupPlayersByYear(players: DraftPlayer[]): Record<number, DraftPlayer[]> {
+    return players.reduce((acc, player) => {
+      if (!acc[player.year]) {
+        acc[player.year] = [];
+      }
+      acc[player.year].push(player);
+      return acc;
+    }, {} as Record<number, DraftPlayer[]>);
+  }
+
+  // for heatmap
+  rankPlayersByStat(players: DraftPlayer[], stat: keyof DraftPlayer): number[] {
+    return [...players]
+      .filter(p => p[stat] !== null)
+      .sort((a, b) => (b[stat] as number) - (a[stat] as number))
+      .map((p, index) => index + 1);
+  }
+
+  // for heatmap
+  calculateSpearmanCorrelation(x: number[], y: number[]): number {
+    if (x.length !== y.length || x.length === 0) return 0;
+    
+    const n = x.length;
+    const rankDiffs = x.map((_, i) => (x[i] - y[i]) ** 2);
+    const sumDiffs = rankDiffs.reduce((sum, d) => sum + d, 0);
+    
+    return 1 - ((6 * sumDiffs) / (n * (n ** 2 - 1)));
+  }
+
+  // for heatmap
+  getSpearmanCorrelationByYear(players: DraftPlayer[]): { year: number; stat: string; correlation: number }[] {
+    const filteredPlayersByYear = this.filterPlayersByDraftYear(players, 1963, 2018);
+    const filteredPlayers = this.filterGoalies(filteredPlayersByYear);
+    const groupedByYear = this.groupPlayersByYear(filteredPlayers);
+  
+    const stats = ['games_played', 'goals', 'assists', 'points'] as const;
+    let results: { year: number; stat: string; correlation: number }[] = [];
+  
+    Object.entries(groupedByYear).forEach(([year, yearPlayers]) => {
+      const draftRanks = yearPlayers.map(p => p.overall_pick);
+      
+      stats.forEach(stat => {
+        const performanceRanks = this.rankPlayersByStat(yearPlayers, stat);
+        const correlation = this.calculateSpearmanCorrelation(draftRanks, performanceRanks);
+        results.push({ year: Number(year), stat, correlation });
+      });
+    });
+  
+    return results;
+  }
 }
