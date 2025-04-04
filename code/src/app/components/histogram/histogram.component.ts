@@ -1,6 +1,6 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import * as d3 from 'd3';
-import { DataManagerService, PlayerData } from '../data-manager/data-manager.service';
+import { DataManagerService, PlayerData } from '../../services/data-manager/data-manager.service';
 
 @Component({
   selector: 'app-histogram',
