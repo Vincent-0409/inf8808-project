@@ -1,0 +1,72 @@
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .select-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  select {
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+  }
+  
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc; /* Static background */
+    transition: 0.4s;
+    border-radius: 15px;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+  
+  .toggle-switch input:checked + .slider:before {
+    transform: translateX(30px);
+  }
+  
+  .chart-container {
+    width: 90%;
+    position: relative;
+    margin-top: 10px;
+  }
+  
