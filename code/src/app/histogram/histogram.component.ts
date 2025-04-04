@@ -11,18 +11,22 @@ export class HistogramComponent implements OnInit, AfterViewInit {
 
   @ViewChild('chart') private chartContainer!: ElementRef<SVGSVGElement>;
 
-  // Dimensions and margins (responsive width 90% of window)
+  // Dimensions and margins
   private margin = { top: 20, right: 30, bottom: 50, left: 80 };
   private width = window.innerWidth * 0.9;
   private height = 1200; // initial height (will be recalculated)
+  private circleSpacing = 5
+  private circleRadius = 2
 
   private svg!: d3.Selection<SVGGElement, unknown, any, any>;
-  private allData: PlayerData[] = [];
-  pointsMax: number = 1; // Common x-axis maximum (from points column)
+  rawData: any[] = [];
+  pointsMax: number = 1;
 
   // Selected options
   selectedMetric: 'points' | 'goals' | 'assists' = 'points';
   selectedGrouping: 'nationality' | 'age' = 'nationality';
+
+  private allData: PlayerData[] = [];
 
   constructor(private dataManager: DataManagerService) { }
 
@@ -30,7 +34,14 @@ export class HistogramComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.createSvg();
-    this.loadAndDraw();
+    this.dataManager.loadRawDataForHistogram('assets/nhldraft.csv')
+      .then(result => {
+        this.rawData = result.rawData;
+        this.pointsMax = result.pointsMax;
+        this.allData = this.dataManager.processDataForHistogram(this.rawData, this.selectedMetric);
+        this.drawChart(this.allData);
+      })
+      .catch(error => console.error("CSV load error:", error));
   }
 
   // Called when the metric dropdown changes
@@ -47,28 +58,14 @@ export class HistogramComponent implements OnInit, AfterViewInit {
     this.redraw();
   }
 
-  // Load data using the service and draw the chart
-  private loadAndDraw(): void {
-    this.dataManager.loadDataForHistogram('assets/nhldraft.csv', this.selectedMetric)
-      .then(result => {
-        this.pointsMax = result.pointsMax;
-        this.allData = result.data;
-        this.drawChart(this.allData);
-      })
-      .catch(error => console.error("CSV load error:", error));
-  }
-
-  // Redraw chart when options change
+  // Redraws the chart
   private redraw(): void {
     this.svg.selectAll("*").remove();
-    this.dataManager.loadDataForHistogram('assets/nhldraft.csv', this.selectedMetric)
-      .then(result => {
-        this.allData = result.data;
-        this.drawChart(this.allData);
-      });
+    this.allData = this.dataManager.processDataForHistogram(this.rawData, this.selectedMetric);
+    this.drawChart(this.allData);
   }
 
-  // Create the SVG element and main group
+  // Creates the SVG element and main group
   private createSvg(): void {
     this.svg = d3.select(this.chartContainer.nativeElement)
       .attr('width', this.width)
@@ -88,11 +85,9 @@ export class HistogramComponent implements OnInit, AfterViewInit {
         globalMaxStack = Math.max(globalMaxStack, playersArray.length);
       });
     });
-    const circleSpacing = 5;
-    const fixedGroupHeight = ((globalMaxStack + 1) * circleSpacing) + 10;
+    const fixedGroupHeight = ((globalMaxStack + 1) * this.circleSpacing) + 10;
     const innerHeight = yearGroups.length * fixedGroupHeight;
     const innerWidth = this.width - this.margin.left - this.margin.right;
-    // Update overall SVG height
     const newHeight = this.margin.top + this.margin.bottom + innerHeight;
     d3.select(this.chartContainer.nativeElement).attr('height', newHeight);
     return { yearGroups, fixedGroupHeight, innerHeight, innerWidth };
@@ -100,12 +95,11 @@ export class HistogramComponent implements OnInit, AfterViewInit {
 
   // Draws vertical and horizontal axes and group labels
   private drawAxes(layout: { yearGroups: string[], fixedGroupHeight: number, innerHeight: number, innerWidth: number }): d3.ScaleLinear<number, number> {
-    // Draw common vertical axis without ticks
+    // Draw common vertical axis without ticks and its title
     const yLinear = d3.scaleLinear()
       .domain([0, layout.innerHeight])
       .range([0, layout.innerHeight]);
     this.svg.append('g').call(d3.axisLeft(yLinear).tickValues([]));
-    // Vertical axis title
     this.svg.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -this.margin.left + 55)
@@ -113,13 +107,11 @@ export class HistogramComponent implements OnInit, AfterViewInit {
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .text("Années de repêchage");
-
     // Setup x-axis scale with common domain based on pointsMax
     const xScale = d3.scaleLinear()
       .domain([0, this.pointsMax])
       .range([0, layout.innerWidth]);
     const tickValues = d3.range(0.1, this.pointsMax, 0.1);
-    // Draw horizontal axes and group labels for each year group
     layout.yearGroups.forEach((groupLabel, i) => {
       const groupY = i * layout.fixedGroupHeight;
       this.svg.append('g')
@@ -136,7 +128,7 @@ export class HistogramComponent implements OnInit, AfterViewInit {
         .style('font-size', '12px')
         .style('text-anchor', 'start');
     });
-    // Draw horizontal axis title (non-interactive)
+    // Draw non-interactive x-axis title
     this.svg.append("text")
       .attr("x", layout.innerWidth / 2)
       .attr("y", layout.innerHeight + this.margin.bottom - 10)
@@ -145,7 +137,7 @@ export class HistogramComponent implements OnInit, AfterViewInit {
     return xScale;
   }
 
-  // Returns the horizontal axis title using a switch-case structure
+  // Returns the x-axis title using switch-case based on selected metric
   private getXAxisLabel(): string {
     switch(this.selectedMetric) {
       case 'points': return "Points par match";
@@ -155,7 +147,7 @@ export class HistogramComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // Returns order and color functions based on selected grouping mode
+  // Returns ordering and coloring functions based on grouping mode
   private getOrderAndColor(): { getOrder: (p: PlayerData) => number, getColor: (p: PlayerData) => string } {
     if (this.selectedGrouping === 'nationality') {
       return {
@@ -203,18 +195,18 @@ export class HistogramComponent implements OnInit, AfterViewInit {
         playersArray.sort((a, b) => getOrder(a) - getOrder(b));
         playersArray.forEach((player, i) => {
           const cx = xScale(currentStat);
-          const cy = groupBandBottom - (i + 1) * 5; // circleSpacing = 5
+          const cy = groupBandBottom - (i + 1) * this.circleSpacing;
           this.svg.append('circle')
             .attr('cx', cx)
             .attr('cy', cy)
-            .attr('r', 2) // circleRadius = 2
+            .attr('r', this.circleRadius)
             .attr('fill', getColor(player));
         });
       });
     });
   }
 
-  // Main function to draw the histogram chart
+  // Main drawChart function that combines layout, axes, circles, and legend drawing
   private drawChart(data: PlayerData[]): void {
     const layout = this.computeLayout(data);
     const xScale = this.drawAxes(layout);
@@ -222,7 +214,7 @@ export class HistogramComponent implements OnInit, AfterViewInit {
     this.addLegend(layout.innerWidth, layout.innerHeight);
   }
 
-  // Adds a legend in a rectangle at the top right of the chart
+  // Adds a legend rectangle at the top right of the chart
   private addLegend(innerWidth: number, innerHeight: number): void {
     const legendData = this.selectedGrouping === 'nationality' ? [
       { label: 'Canada', color: 'red' },
