@@ -1,0 +1,9 @@
+<div class="container">
+    <h2>Draft Players - Small Multiples</h2>
+    <div class="grid">
+        <div *ngFor="let year of getYears()">
+            <h3>{{ year }}</h3>
+            <canvas id="chart-{{ year }}"></canvas>
+        </div>
+    </div>
+</div>
