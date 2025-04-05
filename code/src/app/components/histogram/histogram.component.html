@@ -1,0 +1,22 @@
+<h1>Histogramme</h1>
+<div class="controls">
+  <div class="select-group">
+    <label for="metricSelect">Statistique :</label>
+    <select id="metricSelect" (change)="onMetricChange($event)">
+      <option value="points" [selected]="selectedMetric === 'points'">Points par match</option>
+      <option value="goals" [selected]="selectedMetric === 'goals'">Buts par match</option>
+      <option value="assists" [selected]="selectedMetric === 'assists'">Passes par match</option>
+    </select>
+  </div>
+  <div class="toggle-group">
+    <span>Nationalité</span>
+    <label class="toggle-switch">
+      <input type="checkbox" (change)="onGroupingToggle($event)" [checked]="selectedGrouping==='age'">
+      <span class="slider"></span>
+    </label>
+    <span>Âge</span>
+  </div>
+</div>
+<div class="chart-container">
+  <svg #chart></svg>
+</div>
