@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, from, shareReplay } from 'rxjs';
+import { Observable, filter, from, shareReplay } from 'rxjs';
 import * as d3 from 'd3';
 
 export interface DraftPlayer {
@@ -103,7 +103,6 @@ export class DataPreprocessingService {
     };
   }
 
-
   // for heatmap
   filterGoalies(players: DraftPlayer[]): DraftPlayer[] {
     return players.filter(p => p.position !== 'G');
@@ -121,16 +120,18 @@ export class DataPreprocessingService {
   }
 
   // for heatmap
-  rankPlayersByStat(players: DraftPlayer[], stat: keyof DraftPlayer): number[] {
+  rankPlayersByStat(players: DraftPlayer[], stat: keyof DraftPlayer): DraftPlayer[] {
     return [...players]
       .filter(p => p[stat] !== null)
-      .sort((a, b) => (b[stat] as number) - (a[stat] as number))
-      .map((p, index) => index + 1);
+      .sort((a, b) => (b[stat] as number) - (a[stat] as number));
   }
 
   // for heatmap
   calculateSpearmanCorrelation(x: number[], y: number[]): number {
-    if (x.length !== y.length || x.length === 0) return 0;
+    if (x.length !== y.length || x.length === 0) {
+      console.log("shits offfffffffffffffffffffffffffffff")
+      return 0;
+    }
     
     const n = x.length;
     const rankDiffs = x.map((_, i) => (x[i] - y[i]) ** 2);
@@ -140,24 +141,83 @@ export class DataPreprocessingService {
   }
 
   // for heatmap
-  getSpearmanCorrelationByYear(players: DraftPlayer[]): { year: number; stat: string; correlation: number }[] {
+  // getSpearmanCorrelationByYear(players: DraftPlayer[]): { year: number; stat: string; correlation: number }[] {
+  //   const filteredPlayersByYear = this.filterPlayersByDraftYear(players, 1963, 2018);
+  //   const filteredPlayers = this.filterGoalies(filteredPlayersByYear);
+  //   console.log("without goalie", filteredPlayers);
+
+  //   const groupedByYear = this.groupPlayersByYear(filteredPlayers);
+  //   console.log("transformed to by year", groupedByYear);
+  
+  //   const stats = ['games_played', 'goals', 'assists', 'points'] as const;
+  //   let results: { year: number; stat: string; correlation: number }[] = [];
+
+  //   Object.entries(groupedByYear).forEach(([year, yearPlayers]) => {
+  //     console.log("Year: ", year)
+  //     stats.forEach(stat => {
+  //       console.log("stat: ", stat)
+  //       // Get only players who have non-null stat values
+  //       const statRankedPlayers = this.rankPlayersByStat(yearPlayers, stat);
+  //       console.log("statRankedplayers:", statRankedPlayers)
+  
+  //       // Extract their overall_pick values and rank those
+  //       const draftRankedPlayers = [...statRankedPlayers]
+  //         .sort((a, b) => (a.overall_pick as number) - (b.overall_pick as number));
+  //       console.log("ranked draft picks:", draftRankedPlayers)
+  
+  //       // Build the ranks for Spearman
+  //       const statRanks = statRankedPlayers.map((_, i) => i + 1);
+  //       console.log("statranks: ", statRanks)
+  //       const draftRanks = statRankedPlayers.map(player =>
+  //         draftRankedPlayers.findIndex(p => p.id === player.id) + 1
+  //       );
+  //       console.log("draftranks: ", draftRanks)
+  
+  //       const correlation = this.calculateSpearmanCorrelation(draftRanks, statRanks);
+  //       results.push({ year: Number(year), stat, correlation });
+  //     });
+  //   });
+  
+  //   return results;
+  // }
+
+  // for heatmap
+  // TODO: 
+  // Maybe filter out the correlations for years or stats of years that 
+  // have fewer than a set number of samples used for calculation.
+  getSpearmanCorrelationByYear(players: DraftPlayer[]): { year: number; stat: string; correlation: number; nb_players_considered: number; }[] {
     const filteredPlayersByYear = this.filterPlayersByDraftYear(players, 1963, 2018);
     const filteredPlayers = this.filterGoalies(filteredPlayersByYear);
+  
     const groupedByYear = this.groupPlayersByYear(filteredPlayers);
   
     const stats = ['games_played', 'goals', 'assists', 'points'] as const;
-    let results: { year: number; stat: string; correlation: number }[] = [];
+    let results: { year: number; stat: string; correlation: number; nb_players_considered: number; }[] = [];
   
     Object.entries(groupedByYear).forEach(([year, yearPlayers]) => {
-      const draftRanks = yearPlayers.map(p => p.overall_pick);
-      
       stats.forEach(stat => {
-        const performanceRanks = this.rankPlayersByStat(yearPlayers, stat);
-        const correlation = this.calculateSpearmanCorrelation(draftRanks, performanceRanks);
-        results.push({ year: Number(year), stat, correlation });
+        const rankedByStat = this.rankPlayersByStat(yearPlayers, stat);
+        const nb_players_considered = rankedByStat.length;
+  
+        const statRanks: number[] = rankedByStat.map((_, index) => index + 1);
+        const overallPicks: number[] = rankedByStat.map(player => player.overall_pick!);
+  
+        const sortedDraft = [...overallPicks].sort((a, b) => a - b);
+        const draftRanks = overallPicks.map(pick => sortedDraft.indexOf(pick) + 1);
+  
+        const correlation = this.calculateSpearmanCorrelation(draftRanks, statRanks);
+  
+        // console.log(`Year: ${year}, Stat: ${stat}`);
+        // console.log("Stat Ranks:", statRanks);
+        // console.log("Draft Ranks (re-ranked picks):", draftRanks);
+        // console.log("Correlation:", correlation);
+        // console.log("-----------------------------");
+  
+        results.push({ year: Number(year), stat, correlation,  nb_players_considered });
       });
     });
   
     return results;
   }
+  
 }
