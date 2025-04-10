@@ -1,9 +1,31 @@
-<div class="container">
-    <h2>Draft Players - Small Multiples</h2>
-    <div class="grid">
-        <div *ngFor="let year of getYears()">
-            <h3>{{ year }}</h3>
-            <canvas id="chart-{{ year }}"></canvas>
+<div class="small-multiples-container">
+    <h2>Évolution des Statistiques par Position au Repêchage</h2>
+
+    <div class="filters">
+        <div class="year-range">
+            <label>Plage d'années:</label>
+            <input type="number" [ngModel]="yearRange.min" (ngModelChange)="updateYearRange($event, yearRange.max)"
+                min="1963" max="2022">
+            <span>à</span>
+            <input type="number" [ngModel]="yearRange.max" (ngModelChange)="updateYearRange(yearRange.min, $event)"
+                min="1963" max="2022">
         </div>
+    </div>
+
+    <div class="charts-grid">
+        <div *ngFor="let statConfig of statConfigs" class="chart-item">
+            <app-draft-position-chart [players]="players" [statConfig]="statConfig"
+                [title]="statConfig.label + ' par position au repêchage'" [yAxisLabel]="statConfig.label"
+                [splitByPosition]="isPositionSplit">
+            </app-draft-position-chart>
+        </div>
+
+        <!-- Graphique supplémentaire pour les joueurs réguliers -->
+        <!-- <div class="chart-item">
+            <app-draft-position-chart [players]="players" [statConfig]="statConfig"
+                [title]="statConfig.label + ' par position au repêchage'" [yAxisLabel]="statConfig.label"
+                [splitByPosition]="isPositionSplit">
+            </app-draft-position-chart>
+        </div> -->
     </div>
 </div>
