@@ -109,7 +109,6 @@
       }
     }
   },
-  "defaultProject": "code",
   "cli": {
     "analytics": "aea07c7a-7418-4b4d-9cc5-1e4c99778bc2"
   }
