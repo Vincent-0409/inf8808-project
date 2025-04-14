@@ -9,6 +9,8 @@ import { HeatmapComponent } from './components/heatmap/heatmap.component';
 import { SmallMultiplesComponent } from './components/small-multiples/small-multiples.component';
 import { HttpClientModule } from '@angular/common/http';
 import { DraftPositionChartComponent } from './components/draft-position-chart/draft-position-chart.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MaterialPageComponent } from './pages/material-page/material-page.component';
 
 @NgModule({
   declarations: [
@@ -16,13 +18,15 @@ import { DraftPositionChartComponent } from './components/draft-position-chart/d
     HistogramComponent,
     HeatmapComponent,
     SmallMultiplesComponent,
-    DraftPositionChartComponent
+    DraftPositionChartComponent,
+    MaterialPageComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    BrowserAnimationsModule
   ],
   providers: [],
   bootstrap: [AppComponent, HeatmapComponent]
