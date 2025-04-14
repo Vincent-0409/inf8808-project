@@ -11,6 +11,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { DraftPositionChartComponent } from './components/draft-position-chart/draft-position-chart.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialPageComponent } from './pages/material-page/material-page.component';
+import { MainPageComponent } from './pages/main-page/main-page.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 @NgModule({
   declarations: [
@@ -19,14 +22,16 @@ import { MaterialPageComponent } from './pages/material-page/material-page.compo
     HeatmapComponent,
     SmallMultiplesComponent,
     DraftPositionChartComponent,
-    MaterialPageComponent
+    MaterialPageComponent,
+    MainPageComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    [MatToolbarModule, MatCardModule],
   ],
   providers: [],
   bootstrap: [AppComponent, HeatmapComponent]
