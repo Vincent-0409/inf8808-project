@@ -1,0 +1,92 @@
+<mat-toolbar color="primary">
+    <span>Projet INF8808E - Visualisation de données</span>
+  </mat-toolbar>
+  
+  <div class="content">
+    <!-- Introduction -->
+    <mat-card>
+      <mat-card-title>Introduction</mat-card-title>
+      <mat-card-content>
+        <p>
+          Ce projet, réalisé dans le cadre du cours INF8808E - Visualisation de données à Polytechnique Montréal, vise à analyser l’impact du repêchage de la LNH sur les performances des joueurs et des équipes à travers des visualisations interactives.
+        </p>
+        <p>
+          <strong>Équipe :</strong> Loïc Alavoine (2097189), Simon Bachand (2164037), Vincent Bellemare (2118835), Minh Ngoc Do (2110667), Basil Gil (2065948)
+        </p>
+        <p><strong>Professeur :</strong> Thomas Hurtut</p>
+        <p><strong>Date :</strong> 15 avril 2025</p>
+      </mat-card-content>
+    </mat-card>
+  
+    <!-- Contexte et Objectifs -->
+    <mat-card>
+      <mat-card-title>Contexte et Objectifs</mat-card-title>
+      <mat-card-content>
+        <p>
+          Le repêchage de la Ligue nationale de hockey (LNH) représente un moment clé pour les franchises, qui mobilisent des ressources importantes pour sélectionner les meilleurs talents. Cependant, le succès des joueurs repêchés demeure imprévisible. Ce projet cherche à répondre à la question centrale : les performances des joueurs dans la LNH sont-elles à la hauteur de leur classement au repêchage ? Nous explorons également des croyances populaires, comme l’idée que les choix de premier tour garantissent le succès, à travers des visualisations interactives.
+        </p>
+      </mat-card-content>
+    </mat-card>
+  
+    <!-- Description des Données -->
+    <mat-card>
+      <mat-card-title>Description des Données</mat-card-title>
+      <mat-card-content>
+        <p>
+          Nos analyses s’appuient sur plusieurs jeux de données, principalement les données du repêchage de la LNH de 1963 à 2022 (disponibles sur Kaggle), ainsi que les statistiques des joueurs et des équipes en saisons régulières et séries éliminatoires (Hockey Reference). Ces données incluent des informations sur 12 050 joueurs, avec des attributs comme le rang de sélection, la nationalité, l’âge, et les performances (buts, passes, matchs joués). Elles permettent d’examiner les tendances et l’impact du repêchage sur le succès individuel et collectif.
+        </p>
+      </mat-card-content>
+    </mat-card>
+  
+    <!-- Visualisation 1 : Scatter Plot -->
+    <mat-card>
+      <mat-card-title>Visualisation 1 - Nuage de points</mat-card-title>
+      <mat-card-content>
+        <p>
+          Cette visualisation interactive explore la relation entre le succès des équipes et le nombre de joueurs repêchés en première ronde ou dans le top cinq. Chaque point représente une équipe pour une saison (1963-64 à 2021-22), avec l’axe des x indiquant le nombre de joueurs de première ronde et l’axe des y les points en saison régulière. Les champions de la coupe Stanley sont en jaune.
+        </p>
+        <div class="placeholder">Visualisation en cours de développement</div>
+      </mat-card-content>
+    </mat-card>
+  
+    <!-- Visualisation 2 : Small Multiple Line Chart -->
+    <mat-card>
+      <mat-card-title>Visualisation 2 - Graphiques linéaires multiples</mat-card-title>
+      <mat-card-content>
+        <p>
+          Cet ensemble de graphiques linéaires montre l’évolution des statistiques (matchs joués, buts, passes, probabilité de devenir régulier, contribution aux points) selon la position au repêchage (1 à 31 par ronde). Elle aide à identifier les tendances et à évaluer les stratégies de sélection.
+        </p>
+        <app-small-multiples></app-small-multiples>
+      </mat-card-content>
+    </mat-card>
+  
+    <!-- Visualisation 3 : Stacked Dot Histograms -->
+    <mat-card>
+      <mat-card-title>Visualisation 3 - Histogrammes à points superposés</mat-card-title>
+      <mat-card-content>
+        <p>
+          Ce graphique illustre la distribution des statistiques par match (buts, passes, points) des joueurs selon leur année de repêchage (1963-2022), regroupées par tranches de cinq ans, avec des distinctions par nationalité ou âge. Il analyse l’évolution des performances dans le temps.
+        </p>
+        <app-histogram></app-histogram>
+      </mat-card-content>
+    </mat-card>
+  
+    <!-- Visualisation 4 : Heatmap -->
+    <mat-card>
+      <mat-card-title>Visualisation 4 - Carte de chaleur</mat-card-title>
+      <mat-card-content>
+        <p>
+          Cette carte de chaleur montre la corrélation entre le rang de repêchage et les performances (points, buts, passes, matchs joués) pour chaque année de 1963 à 2018. Les couleurs (vert pour positif, rouge pour négatif) indiquent la force de la corrélation.
+        </p>
+        <app-heatmap></app-heatmap>
+      </mat-card-content>
+    </mat-card>
+  
+    <!-- Conclusion -->
+    <mat-card>
+      <mat-card-title>Conclusion</mat-card-title>
+      <mat-card-content>
+        <p>En cours de rédaction.</p>
+      </mat-card-content>
+    </mat-card>
+  </div>

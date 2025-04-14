@@ -1,1 +1,192 @@
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@use '@angular/material' as mat;
+@use './app/pages/material-page/material-page.component.theme' as material-page;
+// Plus imports for other components in your app.
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+// TODO(v15): As of v15 mat.legacy-core no longer includes default typography styles.
+//  The following line adds:
+//    1. Default typography styles for all components
+//    2. Styles for typography hierarchy classes (e.g. .mat-headline-1)
+//  If you specify typography styles for the components you use elsewhere, you should delete this line.
+//  If you don't need the default component typographies but still want the hierarchy styles,
+//  you can delete this line and instead use:
+//    `@include mat.legacy-typography-hierarchy(mat.define-legacy-typography-config());`
+@include mat.all-legacy-component-typographies();
+@include mat.legacy-core();
+
+$indigo-pink-theme: mat.define-light-theme(
+    (
+        color: (
+            primary: mat.define-palette(mat.$indigo-palette),
+            accent: mat.define-palette(mat.$pink-palette, A200, A100, A400),
+            warn: mat.define-palette(mat.$red-palette),
+        ),
+    )
+);
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+@include mat.all-legacy-component-themes($indigo-pink-theme);
+@include material-page.theme($indigo-pink-theme);
+
+.indigo-pink-theme {
+    // Nothing to do. This is the default theme
+}
+
+.deeppurple-amber-theme {
+    $deeppurple-amber-theme: mat.define-light-theme(
+        (
+            color: (
+                primary: mat.define-palette(mat.$deep-purple-palette),
+                accent: mat.define-palette(mat.$amber-palette, A200, A100, A400),
+            ),
+        )
+    );
+    @include mat.all-legacy-component-colors($deeppurple-amber-theme);
+    @include material-page.theme($deeppurple-amber-theme);
+}
+
+.pink-bluegrey-theme {
+    $pink-bluegrey-theme: mat.define-dark-theme(
+        (
+            color: (
+                primary: mat.define-palette(mat.$pink-palette, 700, 500, 900),
+                accent: mat.define-palette(mat.$blue-grey-palette, A200, A100, A400),
+            ),
+        )
+    );
+    @include mat.all-legacy-component-colors($pink-bluegrey-theme);
+    @include material-page.theme($pink-bluegrey-theme);
+}
+
+.purple-green-theme {
+    $purple-green-theme: mat.define-dark-theme(
+        (
+            color: (
+                primary: mat.define-palette(mat.$purple-palette, 700, 500, 800),
+                accent: mat.define-palette(mat.$green-palette, A200, A100, A400),
+            ),
+        )
+    );
+    @include mat.all-legacy-component-colors($purple-green-theme);
+    @include material-page.theme($purple-green-theme);
+}
+
 /* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+    height: 100%;
+}
+body {
+    margin: 0;
+    font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+.white-text {
+    color: white;
+}
+
+.light-btn {
+    background-color: rgba(255, 255, 255, 0.628);
+}
+
+.dark-btn {
+    background-color: rgba(105 104 122 / 63%);
+    color: orange;
+}
+
+.my-dark-dialog-class > mat-dialog-container {
+    background-color: #364a5f;
+
+    .mat-dialog-title {
+        color: orange;
+    }
+
+    .mat-dialog-content {
+        color: white;
+    }
+
+    // Unfocused text and border
+    .mat-form-field-appearance-outline .mat-form-field-outline, .mat-form-field-label {
+        color: rgb(222 184 135 / 30%);
+    }
+
+    // Focused text and border
+    .mat-form-field-appearance-outline.mat-focused:not(.mat-form-field-invalid) .mat-form-field-outline-thick,
+    .mat-form-field.mat-focused:not(.mat-form-field-invalid) .mat-form-field-label {
+        color: rgb(225, 166, 90);
+    }
+
+    // Entered text
+    .mat-form-field-infix { 
+        color: orange;
+    }
+
+    // Cursor color
+    .mat-form-field:not(.mat-form-field-invalid) .mat-input-element {
+        caret-color: orange;
+    }
+
+    button {
+        background-color: #496481;
+        color: orange;
+    }
+
+    button:hover {
+        background-color: #122f4d;
+    }
+}
+
+.in-game-light-background {
+    background: linear-gradient(0deg, rgb(173, 182, 248), 35%, rgba(12, 94, 227, 0.982));
+}
+.in-game-dark-background {
+    background: linear-gradient(0deg, #1c1c21, 35%, #364a5f);
+}
+
+.basic-background {
+    background: linear-gradient(315deg, #e1e1ff, 50%, rgb(39, 119, 255));
+}
+
+.dark-background {
+    background: linear-gradient(315deg, #1c1c21, 50%, #364a5f)
+}
+  
+.split-background {
+    background: radial-gradient(circle at center, rgb(39, 119, 255),70%, #e1e1ff);
+    animation: background-move1 5s ease-in-out 1;
+    @keyframes background-move1 {
+        0% {
+            background-size: 0%;
+        }
+        100% {
+            background-size: 100%;
+        }
+    }
+}
+
+.split-dark-background {
+    background: radial-gradient(circle at center, #4687cb, 70%, #1c1c21);
+    animation: background-move2 5s ease-in-out 1;
+    @keyframes background-move2 {
+        0% {
+            background-size: 0%;
+        }
+        100% {
+            background-size: 100%;
+        }
+    }
+}
+
+// mat-dialog-container { 
+//     // Ensures a smooth transition when the theme changes but is not comfortable for the eye when you open a dialog with dialog.open()
+//     -webkit-transition: .4s;
+// }
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
