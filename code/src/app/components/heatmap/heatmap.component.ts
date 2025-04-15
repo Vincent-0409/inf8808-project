@@ -202,18 +202,20 @@ export class HeatmapComponent implements OnInit {
   }
 
   private setRectHandler(): void {
-    const tooltip = d3.select('#tooltip');
+    const tooltip = d3.select('#tooltip-heatmap');
   
     d3.selectAll<SVGRectElement, HeatmapData>('.cell')
       .on('mouseover', (event, d: HeatmapData) => {
         tooltip
-          .style('opacity', 1)
           .html(`
             <strong>Année :</strong> ${d.year}<br/>
             <strong>Statistique :</strong> ${this.getStatLabel(d.stat)}<br/>
             <strong>Corrélation :</strong> ${d.correlation.toFixed(2)}
-          `);
-  
+          `)
+          .style('left', `${event.clientX - 69}px`)
+          .style('top', `${event.clientY - 160}px`)
+          .style('opacity', 1);
+
         this.selectTicks(d.stat, d.year);
   
         d3.select(event.currentTarget as SVGRectElement)
@@ -222,13 +224,9 @@ export class HeatmapComponent implements OnInit {
           .attr('stroke-width', 2);
       })
       .on('mousemove', (event) => {
-        const tooltipNode = tooltip.node() as HTMLElement;
-        const tooltipWidth = tooltipNode?.offsetWidth || 150;
-        const tooltipHeight = tooltipNode?.offsetHeight || 80;
-  
         tooltip
-          .style('left', `${event.pageX - tooltipWidth / 2}px`)
-          .style('top', `${event.pageY - tooltipHeight - 10}px`);
+          .style('left', `${event.clientX - 69}px`)
+          .style('top', `${event.clientY - 160}px`);
       })
       .on('mouseout', (event) => {
         tooltip.style('opacity', 0);
@@ -239,7 +237,6 @@ export class HeatmapComponent implements OnInit {
           .attr('stroke-width', null);
       });
   }
-  
 
   private getStatLabel(stat: string): string {
     const statLabels: Record<string, string> = {

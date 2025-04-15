@@ -1,14 +1,14 @@
-#tooltip {
+#tooltip-heatmap {
     position: absolute;
-    width: 150px;
+    width: auto;
     background: rgba(63, 63, 63, 0.85);
     border-radius: 4px;
     padding: 8px 12px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.2s ease, top 0.1s ease, left 0.1s ease;
-    z-index: 10;
+    z-index: 1000;
     font-size: 14px;
     color: #ffffff;
+    transition: opacity 0.15s ease;
   }
