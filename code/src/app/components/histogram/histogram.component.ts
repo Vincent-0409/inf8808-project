@@ -13,7 +13,7 @@ export class HistogramComponent implements OnInit, AfterViewInit {
 
   // Dimensions and margins
   private margin = { top: 20, right: 30, bottom: 50, left: 80 };
-  private width = window.innerWidth * 0.9;
+  private width = window.innerWidth * 0.95;
   private height = 1200; // initial height (will be recalculated)
   private circleSpacing = 5
   private circleRadius = 2
