@@ -14,6 +14,7 @@ import { MaterialPageComponent } from './pages/material-page/material-page.compo
 import { MainPageComponent } from './pages/main-page/main-page.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { DraftScatterPlotComponent } from './components/draft-scatter-plot/draft-scatter-plot.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     SmallMultiplesComponent,
     DraftPositionChartComponent,
     MaterialPageComponent,
-    MainPageComponent
+    MainPageComponent,
+    DraftScatterPlotComponent
   ],
   imports: [
     BrowserModule,
