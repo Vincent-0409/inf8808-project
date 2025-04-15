@@ -12,7 +12,7 @@ export class HistogramComponent implements OnInit, AfterViewInit {
   @ViewChild('chart') private chartContainer!: ElementRef<SVGSVGElement>;
 
   // Dimensions and margins
-  private margin = { top: 20, right: 30, bottom: 50, left: 80 };
+  private margin = { top: 20, right: 30, bottom: 50, left: 100 };
   private width = window.innerWidth * 0.95;
   private height = 1200; // initial height (will be recalculated)
   private circleSpacing = 5
@@ -102,7 +102,7 @@ export class HistogramComponent implements OnInit, AfterViewInit {
     this.svg.append('g').call(d3.axisLeft(yLinear).tickValues([]));
     this.svg.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -this.margin.left + 55)
+      .attr("y", -this.margin.left)
       .attr("x", -layout.innerHeight / 2)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
@@ -121,14 +121,14 @@ export class HistogramComponent implements OnInit, AfterViewInit {
         .style('stroke-dasharray', i < layout.yearGroups.length - 1 ? '3,3' : '')
         .style('stroke', i < layout.yearGroups.length - 1 ? 'lightgray' : '');
       this.svg.append('text')
-        .attr('x', -this.margin.left + 5)
+        .attr('x', '-10ex')
         .attr('y', groupY + layout.fixedGroupHeight / 2)
         .attr('dy', '.35em')
         .text(groupLabel)
         .style('font-size', '12px')
         .style('text-anchor', 'start');
     });
-    // Draw non-interactive x-axis title
+    // Draw x-axis title
     this.svg.append("text")
       .attr("x", layout.innerWidth / 2)
       .attr("y", layout.innerHeight + this.margin.bottom - 10)
@@ -137,7 +137,7 @@ export class HistogramComponent implements OnInit, AfterViewInit {
     return xScale;
   }
 
-  // Returns the x-axis title using switch-case based on selected metric
+  // Returns the x-axis title based on selected metric
   private getXAxisLabel(): string {
     switch(this.selectedMetric) {
       case 'points': return "Points par match";
