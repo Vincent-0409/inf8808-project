@@ -314,10 +314,13 @@ export class SmallMultiplesComponent implements OnInit, AfterViewInit {
         const position = Math.round(x.invert(mouseX));
         const dataPoint = data.find(d => d.position === position);
         
-        if (dataPoint) {
+        if (dataPoint) {          
+          const tooltipX = event.clientX + 15;
+          const tooltipY = event.clientY - 20;
+          
           tooltip.style('opacity', 1)
-            .style('left', `${event.pageX + 15}px`)
-            .style('top', `${event.pageY - 20}px`);
+              .style('left', `${tooltipX}px`)
+              .style('top', `${tooltipY}px`);
           
           tooltip.select('#draft-position').text(dataPoint.position.toString());
           
@@ -328,6 +331,7 @@ export class SmallMultiplesComponent implements OnInit, AfterViewInit {
           tooltip.select('#avg-assists').text(this.calculateAverage(playersAtPosition, 'assists').toFixed(1));
           tooltip.select('#regular-player-pct').text(this.calculateRegularPlayerPercentage(playersAtPosition).toFixed(1));
           
+          // Ajouter un cercle temporaire pour indiquer la position survolée
           svg.selectAll('.hover-circle').remove();
           svg.append('circle')
             .attr('class', 'hover-circle')

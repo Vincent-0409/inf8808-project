@@ -135,7 +135,7 @@
 }
 
 .tooltip {
-    position: absolute;
+    position: fixed; // Changé de absolute à fixed pour un positionnement relatif à la fenêtre
     pointer-events: none;
     background-color: white;
     border: 1px solid #ccc;
@@ -144,6 +144,8 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     font-size: 12px;
     z-index: 1000;
+    max-width: 250px; // Limite la largeur
+    transition: opacity 0.2s; // Animation douce d'apparition/disparition
 
     .tooltip-header {
         font-weight: bold;
