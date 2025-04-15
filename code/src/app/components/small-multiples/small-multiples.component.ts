@@ -1,5 +1,8 @@
 import { Component, OnInit, AfterViewInit, HostListener } from '@angular/core';
 import { DataPreprocessingService, DraftPlayer } from '../../services/preprocessing/preprocessing.service';
+import { NgZone } from '@angular/core';
+import { take } from 'rxjs/operators';
+
 import * as d3 from 'd3';
 
 interface ChartDataPoint {
@@ -56,7 +59,7 @@ export class SmallMultiplesComponent implements OnInit, AfterViewInit {
   
   isPositionSplit: boolean = false;
   yearRange: { min: number, max: number } = { min: 2000, max: 2022 };
-  selectedDraftPosition: number | null = 34;
+  selectedDraftPosition: number | null = 1;
   positionGroups = {
     forwards: ['C', 'LW', 'RW', 'F'],
     defenders: ['D', 'G']
@@ -68,7 +71,9 @@ export class SmallMultiplesComponent implements OnInit, AfterViewInit {
 
   constructor(
     private dataService: DataPreprocessingService,
+    private ngZone: NgZone
   ) {}
+  
 
   ngOnInit(): void {
     this.dataService.loadDraftData().subscribe(data => {
@@ -136,11 +141,11 @@ export class SmallMultiplesComponent implements OnInit, AfterViewInit {
     this.players = filteredPlayers;
   }
   
-  togglePositionSplit(): void {
-    this.isPositionSplit = !this.isPositionSplit;
-    setTimeout(() => {
+  onTabChange(isSplit: boolean): void {
+    this.isPositionSplit = isSplit;
+    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
       this.renderCharts();
-    }, 100);
+    });
   }
 
   renderCharts(): void {
@@ -182,10 +187,20 @@ export class SmallMultiplesComponent implements OnInit, AfterViewInit {
 
     const svg = d3.select(element)
       .append('svg')
-      .attr('width', containerWidth)
-      .attr('height', containerHeight)
+      .attr('width', '100%')
+      .attr('height', '100%')
       .append('g')
       .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
+  
+
+    // Ajout du titre du graphique dans le SVG
+    svg.append('text')
+      .attr('x', this.width / 2)
+      .attr('y', -10)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '10px')
+      .attr('font-weight', 'bold')
+      .text(config.label);
 
     // Préparer les données par position de repêchage
     const draftPositions = Array.from({ length: 217 }, (_, i) => i + 1);
@@ -202,9 +217,10 @@ export class SmallMultiplesComponent implements OnInit, AfterViewInit {
       // Calculer l'écart-type
       let stdDev = 0;
       if (playersAtPosition.length > 1 && config.key) {
-        const values = playersAtPosition
-          .filter(p => p[config.key as keyof DraftPlayer] !== null)
-          .map(p => p[config.key as keyof DraftPlayer] as number);
+        const values = playersAtPosition.map(p => {
+          const val = p[config.key as keyof DraftPlayer];
+          return val !== null ? val as number : 0;
+        });        
         
         if (values.length > 1) {
           const mean = values.reduce((a, b) => a + b, 0) / values.length;
@@ -364,11 +380,23 @@ export class SmallMultiplesComponent implements OnInit, AfterViewInit {
   calculateAverage(players: DraftPlayer[], key: keyof DraftPlayer): number {
     if (!players.length) return 0;
     
-    const values = players
-      .filter(p => p[key] !== null)
-      .map(p => p[key] as number);
+    const values = players.map(p => (p[key] !== null ? (p[key] as number) : 0));
     
     if (!values.length) return 0;
     return values.reduce((a, b) => a + b, 0) / values.length;
+  }
+
+  get selectedSummary() {
+    if (!this.selectedDraftPosition) {
+      return null;
+    }
+    const playersAtPos = this.players.filter(p => p.overall_pick === this.selectedDraftPosition);
+    return {
+      position: this.selectedDraftPosition,
+      avgGames: playersAtPos.length ? this.calculateAverage(playersAtPos, 'games_played') : 0,
+      avgGoals: playersAtPos.length ? this.calculateAverage(playersAtPos, 'goals') : 0,
+      avgAssists: playersAtPos.length ? this.calculateAverage(playersAtPos, 'assists') : 0,
+      regularPlayerPct: playersAtPos.length ? this.calculateRegularPlayerPercentage(playersAtPos) : 0
+    };
   }
 }
