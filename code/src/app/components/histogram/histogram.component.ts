@@ -34,7 +34,7 @@ export class HistogramComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.createSvg();
-    this.dataManager.loadRawDataForHistogram('assets/nhldraft.csv')
+    this.dataManager.loadRawDataForHistogram('assets/data/nhldraft.csv')
       .then(result => {
         this.rawData = result.rawData;
         this.pointsMax = result.pointsMax;
