@@ -8,7 +8,6 @@ import { HistogramComponent } from './components/histogram/histogram.component';
 import { HeatmapComponent } from './components/heatmap/heatmap.component';
 import { SmallMultiplesComponent } from './components/small-multiples/small-multiples.component';
 import { HttpClientModule } from '@angular/common/http';
-import { DraftPositionChartComponent } from './components/draft-position-chart/draft-position-chart.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialPageComponent } from './pages/material-page/material-page.component';
 import { MainPageComponent } from './pages/main-page/main-page.component';
@@ -21,7 +20,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     HistogramComponent,
     HeatmapComponent,
     SmallMultiplesComponent,
-    DraftPositionChartComponent,
     MaterialPageComponent,
     MainPageComponent
   ],

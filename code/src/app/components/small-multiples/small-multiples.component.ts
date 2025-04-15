@@ -1,6 +1,5 @@
 import { Component, OnInit, AfterViewInit, HostListener } from '@angular/core';
 import { DataPreprocessingService, DraftPlayer } from '../../services/preprocessing/preprocessing.service';
-import { StatConfig } from '../draft-position-chart/draft-position-chart.component';
 import * as d3 from 'd3';
 
 interface ChartDataPoint {
@@ -8,6 +7,13 @@ interface ChartDataPoint {
   value: number;
   stdDev: number;
   count: number;
+}
+
+export interface StatConfig {
+  key?: keyof DraftPlayer;
+  label: string;
+  format?: (value: number) => string;
+  customCalculation?: (players: DraftPlayer[]) => number;
 }
 
 @Component({
