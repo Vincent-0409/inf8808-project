@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,13 +35,13 @@ jobs:
       - name: Build Angular app
         run: |
           npm run build -- --output-path=dist --base-href=/inf8808-project/
-          cp dist/index.html dist/404.html  # Optionnel: utile pour les routes Angular
-          echo "" > dist/.nojekyll           # Empêche Jekyll
+          cp dist/index.html dist/404.html
+          echo "" > dist/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'dist'
+          path: code/dist  # 👈 On upload ce qu’il y a dans code/dist
 
   deploy:
     needs: build
