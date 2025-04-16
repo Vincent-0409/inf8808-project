@@ -13,6 +13,7 @@ import { MaterialPageComponent } from './pages/material-page/material-page.compo
 import { MainPageComponent } from './pages/main-page/main-page.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { ScatterPlotComponent } from './scatter-plot/scatter-plot.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     HeatmapComponent,
     SmallMultiplesComponent,
     MaterialPageComponent,
-    MainPageComponent
+    MainPageComponent,
+    ScatterPlotComponent
   ],
   imports: [
     BrowserModule,

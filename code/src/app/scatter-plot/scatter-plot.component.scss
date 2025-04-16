@@ -1,0 +1,152 @@
+/* Conteneur global sans bordure */
+.chart-container {
+    position: relative;
+    width: 900px;   /* Ajustez selon vos besoins */
+    /* On peut définir une hauteur minimale mais laisser le contenu déterminer la taille totale */
+    min-height: 700px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  
+  /* Le conteneur où D3 insère le SVG */
+  .scatter-plot {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* --- TOGGLE STYLISÉ --- */
+  /* Le toggle est maintenant dans le flux normal, centré sous le SVG */
+  .toggle-switch {
+    text-align: center;
+    display: block;
+    transform: translateX(-20px);
+  }
+  
+  .toggle-label {
+    font-size: 14px;
+    color: #333;
+    vertical-align: middle;
+  }
+  
+  /* Styles du switch custom */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    vertical-align: middle;
+  }
+  
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  /* Le slider */
+  .slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc; /* Couleur constante */
+    cursor: pointer;
+    border-radius: 24px;
+    transition: 0.4s;
+  }
+  
+  /* Le rond qui se déplace */
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    top: 3px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: 0.4s;
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(26px);
+  }
+  
+  /* --- LÉGENDE --- */
+  .legend {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 150px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    z-index: 10;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .legend-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin-right: 5px;
+    border: 1px solid #aaa;
+  }
+  .legend-color.champion {
+    background-color: #FF8C00;
+  }
+  .legend-color.non-champion {
+    background-color: black;
+  }
+  .legend-text {
+    font-size: 13px;
+    color: #333;
+  }
+  
+  /* --- TOOLTIP --- */
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 12px;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+    z-index: 100;
+  }
+  
+  /* --- AXES & Points --- */
+  .x-axis path,
+  .x-axis line,
+  .y-axis path,
+  .y-axis line {
+    stroke: #bbb;
+    shape-rendering: crispEdges;
+  }
+  
+  .x.axis-title,
+  .y.axis-title {
+    font-size: 14px;
+    fill: #333;
+    font-weight: bold;
+  }
+  
+  circle {
+    stroke: #fff;
+    stroke-width: 1px;
+  }
+  

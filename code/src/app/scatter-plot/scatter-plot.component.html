@@ -1,0 +1,31 @@
+<!-- Le conteneur englobe tout (graphique, toggle, légende, tooltip) -->
+<div id="chartContainer" class="chart-container">
+    <!-- Conteneur où D3 injecte le SVG -->
+    <div id="scatterPlot" class="scatter-plot"></div>
+  
+    <!-- Toggle placé dans le flux normal, sous le SVG -->
+    <div class="toggle-switch">
+      <span class="toggle-label left-label">Première ronde</span>
+      <label class="switch">
+        <input type="checkbox" [(ngModel)]="useTop5" (change)="updateChart()">
+        <span class="slider"></span>
+      </label>
+      <span class="toggle-label right-label">Top 5</span>
+    </div>
+  
+    <!-- Légende (reste positionnée en haut à droite grâce à position absolute) -->
+    <div id="chartLegend" class="legend">
+      <div class="legend-item">
+        <span class="legend-color champion"></span>
+        <span class="legend-text">Champions</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color non-champion"></span>
+        <span class="legend-text">Non Champions</span>
+      </div>
+    </div>
+  
+    <!-- Tooltip (positionné dynamiquement par D3) -->
+    <div id="chartTooltip" class="tooltip"></div>
+  </div>
+  
