@@ -251,7 +251,7 @@ export class ScatterPlotComponent implements AfterViewInit {
       .attr('x', -this.height / 2)
       .attr('y', -50)
       .attr('text-anchor', 'middle')
-      .text('Nombre de points accumulés en saison régulière');
+      .text('Points accumulés en saison régulière');
 
     // Brisure de l'axe Y (zigzag) à la valeur 20
     const breakY = yScale(20);
@@ -278,30 +278,39 @@ export class ScatterPlotComponent implements AfterViewInit {
         return (nhlChampions[year] === d.teamFullName) ? championColor : 'black';
       })
       .on('mouseover', (event, d: ScatterData) => {
-        d3.select(event.currentTarget).transition().duration(100).attr('r', 5);
-        tooltip
+        d3.select(event.currentTarget)
+          .transition().duration(100)
+          .attr('r', 5);
+        const year = parseInt(d.season.substring(0, 4), 10);
+        const championLine = (nhlChampions[year] === d.teamFullName)
+          ? `<span style="color: ${championColor}; font-weight: bold;">Champion de la Coupe Stanley</span><br/>`
+          : "";
+        d3.select('#chartTooltip')
           .style('opacity', '1')
           .html(`
             <strong>${d.teamFullName}</strong><br/>
+            ${championLine}
             Saison: ${d.season}<br/>
-            Points: ${d.points}<br/>
-            1ère ronde: ${d.draftCount}<br/>
-            Top 5: ${d.top5Count}
+            Points en saison régulière: ${d.points}<br/>
+            Nombre de joueurs repêché en 1ère ronde: ${d.draftCount}<br/>
+            Nombre de joueurs dans le top 5: ${d.top5Count}
           `);
       })
       .on('mousemove', (event) => {
         const containerSel = d3.select('#chartContainer');
         const [mx, my] = d3.pointer(event, containerSel.node());
-        tooltip
+        d3.select('#chartTooltip')
           .style('left', (mx + 10) + 'px')
           .style('top', (my - 20) + 'px');
       })
       .on('mouseout', (event) => {
-        d3.select(event.currentTarget).transition().duration(100).attr('r', 3);
-        tooltip.style('opacity', '0');
+        d3.select(event.currentTarget)
+          .transition().duration(100)
+          .attr('r', 3);
+        d3.select('#chartTooltip')
+          .style('opacity', '0');
       });
 
-    // Faire passer les points champions au premier plan
     circles.filter((d: ScatterData) => {
       const year = parseInt(d.season.substring(0, 4), 10);
       return nhlChampions[year] === d.teamFullName;
