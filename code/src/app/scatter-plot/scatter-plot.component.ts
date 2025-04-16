@@ -46,7 +46,7 @@ const nhlTeams: { [abbreviation: string]: string } = {
   WSH: "Washington Capitals"
 };
 
-// Dictionnaire des champions par année
+// Dictionnaire des champions (coupe Stanley) par année
 const nhlChampions: { [year: number]: string } = {
   2008: "Detroit Red Wings",
   2009: "Pittsburgh Penguins",
@@ -64,7 +64,7 @@ const nhlChampions: { [year: number]: string } = {
   2021: "Tampa Bay Lightning"
 };
 
-// Couleur champion
+// Couleur pour les équipes championnes
 const championColor = "#FF8C00";
 
 @Component({
@@ -74,12 +74,13 @@ const championColor = "#FF8C00";
 })
 export class ScatterPlotComponent implements AfterViewInit {
 
-  // Toggle : false => utiliser draftCount, true => top5Count
+  // false => utiliser draftCount (première ronde), true => top5Count
   useTop5: boolean = false;
-  
+
   // Données calculées (fusion des CSV)
   chartData: ScatterData[] = [];
 
+  // Dimensions intérieures du graphique
   private margin = { top: 20, right: 20, bottom: 60, left: 70 };
   private width = 800 - this.margin.left - this.margin.right;
   private height = 600 - this.margin.top - this.margin.bottom;
@@ -88,6 +89,13 @@ export class ScatterPlotComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.loadData();
+  }
+
+  /**
+   * Convertit une année (ex: 2008) en saison ("2008-09")
+   */
+  private convertYearToSeason(year: number): string {
+    return `${year}-${(year + 1).toString().slice(-2)}`;
   }
 
   private async loadData() {
@@ -102,7 +110,7 @@ export class ScatterPlotComponent implements AfterViewInit {
       }
       const skatersDataArray = await Promise.all(skatersPromises);
 
-      // Map pour overall_pick (normalisation en minuscules)
+      // Map pour overall_pick (comparaison en minuscules)
       const draftMap = new Map<string, number>();
       draftData.forEach(row => {
         const playerName = row['player']?.toLowerCase().trim();
@@ -111,9 +119,10 @@ export class ScatterPlotComponent implements AfterViewInit {
         }
       });
 
-      // Comptage des joueurs : première ronde (<31) et top5 (<5)
+      // Comptage de joueurs : première ronde (<31) et top 5 (<5)
       const draftCounts: { [key: string]: Set<string> } = {};
       const top5Counts: { [key: string]: Set<string> } = {};
+
       skatersDataArray.forEach((skaters, idx) => {
         const year = 2008 + idx;
         const seasonStr = this.convertYearToSeason(year);
@@ -124,6 +133,7 @@ export class ScatterPlotComponent implements AfterViewInit {
           const key = `${seasonStr}_${team}`;
           if (!draftCounts[key]) draftCounts[key] = new Set<string>();
           if (!top5Counts[key]) top5Counts[key] = new Set<string>();
+
           if (!draftCounts[key].has(playerName)) {
             const overallPick = draftMap.get(playerName.toLowerCase());
             if (overallPick !== undefined) {
@@ -163,50 +173,46 @@ export class ScatterPlotComponent implements AfterViewInit {
       });
 
       this.chartData = scatterData;
-      this.drawChart();
+      this.drawChart(); // Dessiner initialement
     } catch (error) {
       console.error('Erreur de chargement / traitement des données', error);
     }
   }
 
-  private convertYearToSeason(year: number): string {
-    return `${year}-${(year + 1).toString().slice(-2)}`;
-  }
-
-  /** Redessine le graphique selon la métrique choisie */
+  /**
+   * Dessine le graphique (création unique du SVG et des éléments)
+   */
   drawChart() {
-    // Effacer l'ancien SVG
+    // Efface l'ancien contenu
     d3.select('#scatterPlot').selectAll('*').remove();
 
     // Calcul de la métrique X en fonction du toggle
     const maxX = d3.max(this.chartData, d => this.useTop5 ? d.top5Count : d.draftCount) || 1;
+    // Échelle X sans .nice() pour obtenir uniquement des valeurs entières
     const xScale = d3.scaleLinear()
       .domain([0, maxX])
       .range([0, this.width]);
-
     const maxPoints = d3.max(this.chartData, d => d.points) || 1;
     const yScale = d3.scaleLinear()
       .domain([20, maxPoints])
       .range([this.height, 0]);
 
+    // Création du SVG et du groupe principal
     const svg = d3.select('#scatterPlot')
       .append('svg')
       .attr('width', this.width + this.margin.left + this.margin.right)
       .attr('height', this.height + this.margin.top + this.margin.bottom);
-
     const mainGroup = svg.append('g')
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);
 
-    // Axe X (ticks entiers)
+    // Axe X avec ticks entiers
     const xAxis = d3.axisBottom<number>(xScale)
       .tickValues(d3.range(0, maxX + 1, 1))
       .tickFormat(d3.format('d'));
-    const yAxis = d3.axisLeft<number>(yScale).ticks(6);
-
     const xAxisG = mainGroup.append('g')
       .attr('class', 'x-axis')
       .attr('transform', `translate(0, ${this.height})`)
-      .call(xAxis);
+      .call((g: any) => xAxis(g));
     xAxisG.select('.domain').remove();
     xAxisG.append('line')
       .attr('x1', 0)
@@ -216,6 +222,7 @@ export class ScatterPlotComponent implements AfterViewInit {
       .attr('stroke', '#000')
       .attr('stroke-width', 1);
 
+    // Titre axe X
     mainGroup.append('text')
       .attr('class', 'x axis-title')
       .attr('x', this.width / 2)
@@ -223,9 +230,11 @@ export class ScatterPlotComponent implements AfterViewInit {
       .attr('text-anchor', 'middle')
       .text(this.useTop5 ? 'Nombre de joueurs dans le Top 5' : 'Nombre de joueurs de première ronde');
 
+    // Axe Y
+    const yAxis = d3.axisLeft<number>(yScale).ticks(6);
     const yAxisG = mainGroup.append('g')
       .attr('class', 'y-axis')
-      .call(yAxis);
+      .call((g: any) => yAxis(g));
     yAxisG.select('.domain').remove();
     yAxisG.append('line')
       .attr('x1', 0)
@@ -235,6 +244,7 @@ export class ScatterPlotComponent implements AfterViewInit {
       .attr('stroke', '#000')
       .attr('stroke-width', 1);
 
+    // Titre axe Y
     mainGroup.append('text')
       .attr('class', 'y axis-title')
       .attr('transform', 'rotate(-90)')
@@ -243,6 +253,7 @@ export class ScatterPlotComponent implements AfterViewInit {
       .attr('text-anchor', 'middle')
       .text('Nombre de points accumulés en saison régulière');
 
+    // Brisure de l'axe Y (zigzag) à la valeur 20
     const breakY = yScale(20);
     mainGroup.append('path')
       .attr('class', 'axis-break')
@@ -251,20 +262,22 @@ export class ScatterPlotComponent implements AfterViewInit {
       .attr('stroke-width', 1)
       .attr('fill', 'none');
 
+    // Récupération du tooltip
     const tooltip = d3.select('#chartTooltip');
 
-    const circles = mainGroup.selectAll('circle')
+    // Sélectionner les cercles avec typage générique
+    const circles = mainGroup.selectAll<SVGCircleElement, ScatterData>('circle')
       .data(this.chartData)
       .enter()
       .append('circle')
-      .attr('cx', d => xScale(this.useTop5 ? d.top5Count : d.draftCount))
-      .attr('cy', d => yScale(d.points))
+      .attr('cx', (d: ScatterData) => xScale(this.useTop5 ? d.top5Count : d.draftCount))
+      .attr('cy', (d: ScatterData) => yScale(d.points))
       .attr('r', 3)
-      .attr('fill', d => {
+      .attr('fill', (d: ScatterData) => {
         const year = parseInt(d.season.substring(0, 4), 10);
         return (nhlChampions[year] === d.teamFullName) ? championColor : 'black';
       })
-      .on('mouseover', (event, d) => {
+      .on('mouseover', (event, d: ScatterData) => {
         d3.select(event.currentTarget).transition().duration(100).attr('r', 5);
         tooltip
           .style('opacity', '1')
@@ -288,13 +301,52 @@ export class ScatterPlotComponent implements AfterViewInit {
         tooltip.style('opacity', '0');
       });
 
+    // Faire passer les points champions au premier plan
     circles.filter((d: ScatterData) => {
       const year = parseInt(d.season.substring(0, 4), 10);
       return nhlChampions[year] === d.teamFullName;
     }).raise();
   }
 
+  /**
+   * Lors du changement du toggle, on met à jour la position des points et l'axe X avec une transition.
+   */
   updateChart() {
-    this.drawChart();
+    // Récupérer le groupe principal existant
+    const mainGroup = d3.select('#scatterPlot svg g');
+    if (mainGroup.empty()) return;
+
+    // Calculer la nouvelle échelle X en fonction de la métrique choisie
+    const maxX = d3.max(this.chartData, d => this.useTop5 ? d.top5Count : d.draftCount) || 1;
+    const xScale = d3.scaleLinear().domain([0, maxX]).range([0, this.width]);
+
+    // Création de l'axe X avec ticks entiers
+    const xAxis = d3.axisBottom<number>(xScale)
+      .tickValues(d3.range(0, maxX + 1, 1))
+      .tickFormat(d3.format('d'));
+
+    // Sélection de l'axe X existant
+    const xAxisGroup = mainGroup.select('.x-axis');
+    // Supprimer tous les éléments enfants de l'axe pour repartir sur une base propre
+    xAxisGroup.selectAll("*").remove();
+    // Appliquer l'axe mis à jour sur le groupe
+    xAxisGroup.call((g: any) => xAxis(g));
+    // Recréer la ligne horizontale personnalisée
+    xAxisGroup.append('line')
+      .attr('x1', 0)
+      .attr('y1', 0)
+      .attr('x2', this.width)
+      .attr('y2', 0)
+      .attr('stroke', '#000')
+      .attr('stroke-width', 1);
+
+    // Mettre à jour le titre de l'axe X
+    mainGroup.select('.x.axis-title')
+      .text(this.useTop5 ? 'Nombre de joueurs dans le Top 5' : 'Nombre de joueurs de première ronde');
+
+    // Transition des positions horizontales des cercles (points)
+    mainGroup.selectAll<SVGCircleElement, ScatterData>('circle')
+      .transition().duration(500)
+      .attr('cx', (d: ScatterData) => xScale(this.useTop5 ? d.top5Count : d.draftCount));
   }
 }

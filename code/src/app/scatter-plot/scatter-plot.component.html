@@ -1,9 +1,8 @@
-<!-- Le conteneur englobe tout (graphique, toggle, légende, tooltip) -->
 <div id="chartContainer" class="chart-container">
-    <!-- Conteneur où D3 injecte le SVG -->
+    <!-- Conteneur pour le SVG (le graphique) -->
     <div id="scatterPlot" class="scatter-plot"></div>
   
-    <!-- Toggle placé dans le flux normal, sous le SVG -->
+    <!-- Toggle placé sous le graphique, centré -->
     <div class="toggle-switch">
       <span class="toggle-label left-label">Première ronde</span>
       <label class="switch">
@@ -13,7 +12,7 @@
       <span class="toggle-label right-label">Top 5</span>
     </div>
   
-    <!-- Légende (reste positionnée en haut à droite grâce à position absolute) -->
+    <!-- Légende positionnée en haut à droite -->
     <div id="chartLegend" class="legend">
       <div class="legend-item">
         <span class="legend-color champion"></span>
