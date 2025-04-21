@@ -1,69 +1,107 @@
 <div class="small-multiples-container">
-    <div class="controls">
-      <div class="year-range">
-        <label>Plage d'années: {{ yearRange.min }} - {{ yearRange.max }}</label>
-        <div class="range-inputs">
-          <input type="number" [value]="yearRange.min"
-                 (change)="updateYearRange($any($event.target).value, yearRange.max)"
-                 min="1963" max="2022">
-          <input type="number" [value]="yearRange.max"
-                 (change)="updateYearRange(yearRange.min, $any($event.target).value)"
-                 min="1963" max="2022">
-        </div>
+  <div class="controls">
+    <div class="year-range">
+      <label>Plage d'années: {{ yearRange.min }} - {{ yearRange.max }}</label>
+      <div class="range-inputs">
+        <input type="number" [value]="yearRange.min"
+          (change)="updateYearRange($any($event.target).value, yearRange.max)" min="1963" max="2022" [attr.min]="1963"
+          [attr.max]="2022">
+        <input type="number" [value]="yearRange.max"
+          (change)="updateYearRange(yearRange.min, $any($event.target).value)" min="1963" max="2022" [attr.min]="1963"
+          [attr.max]="2022">
       </div>
     </div>
-  
-    <div class="view-selector">
-        <div class="view-tabs">
-            <div [class.active]="!isPositionSplit" (click)="onTabChange(false)">Vue Joueurs</div>
-            <div [class.active]="isPositionSplit" (click)="onTabChange(true)">Vue Attaquants/Défenseurs</div>
-        </div>
-    </div>
-  
-    <div class="charts-container" [class.position-split]="isPositionSplit">
-  
-      <!-- Vue Joueurs -->
-      <div *ngIf="!isPositionSplit" class="all-players-view">
-        <div *ngFor="let config of statConfigs" class="chart">
-          <div class="chart-content" [id]="'chart-' + (config.key || 'custom')"></div>
-        </div>
+  </div>
 
-        <div class="summary-table">
-          <table *ngIf="selectedDraftPosition; else noSelection">
-            <tr>
-              <td class="label">Position</td>
-              <td>{{ selectedSummary?.position }}</td>
-            </tr>
-            <tr>
-              <td class="label">Matchs joués</td>
-              <td>{{ selectedSummary?.avgGames | number:'1.0-0' }}</td>
-            </tr>
-            <tr>
-              <td class="label">Buts</td>
-              <td>{{ selectedSummary?.avgGoals | number:'1.1-1' }}</td>
-            </tr>
-            <tr>
-              <td class="label">Passes décisives</td>
-              <td>{{ selectedSummary?.avgAssists | number:'1.1-1' }}</td>
-            </tr>
-            <tr>
-              <td class="label">Pourcentage de<br/>joueurs réguliers</td>
-              <td>{{ selectedSummary?.regularPlayerPct | number:'1.1-1' }}%</td>
-            </tr>
-          </table>
-          <ng-template #noSelection>
-            <p>Aucune position sélectionnée</p>
-          </ng-template>
-        </div>
+  <div class="view-selector">
+    <div class="view-tabs">
+      <div [class.active]="!isPositionSplit" (click)="onTabChange(false)">Vue Joueurs</div>
+      <div [class.active]="isPositionSplit" (click)="onTabChange(true)">Vue Attaquants/Défenseurs</div>
+    </div>
+  </div>
+
+  <div class="charts-container" [class.position-split]="isPositionSplit">
+    <!-- Vue Joueurs -->
+    <div *ngIf="!isPositionSplit" class="all-players-view">
+      <div *ngFor="let config of statConfigs" class="chart">
+        <div class="chart-content" [id]="'chart-' + (config.key || 'custom')"></div>
       </div>
-  
-      <!-- Vue Attaquants/Défenseurs -->
-      <div *ngIf="isPositionSplit" class="position-split-view">
-        <h2>À VENIR!</h2>
+
+      <div class="summary-table">
+        <table *ngIf="selectedDraftPosition; else noSelection">
+          <tr>
+            <td class="label">Position</td>
+            <td>{{ selectedSummary?.position }}</td>
+          </tr>
+          <tr>
+            <td class="label">Matchs joués</td>
+            <td>{{ selectedSummary?.avgGames | number:'1.0-0' }}</td>
+          </tr>
+          <tr>
+            <td class="label">Buts</td>
+            <td>{{ selectedSummary?.avgGoals | number:'1.1-1' }}</td>
+          </tr>
+          <tr>
+            <td class="label">Passes décisives</td>
+            <td>{{ selectedSummary?.avgAssists | number:'1.1-1' }}</td>
+          </tr>
+          <tr>
+            <td class="label">Pourcentage de<br />joueurs réguliers</td>
+            <td>{{ selectedSummary?.regularPlayerPct | number:'1.1-1' }}%</td>
+          </tr>
+        </table>
+        <ng-template #noSelection>
+          <p>Aucune position sélectionnée</p>
+        </ng-template>
       </div>
     </div>
-  
-    <div class="legend">
+
+    <!-- Vue Attaquants/Défenseurs -->
+    <div *ngIf="isPositionSplit" class="position-split-view">
+      <div *ngFor="let config of statConfigs" class="chart">
+        <div class="chart-content" [id]="'chart-split-' + (config.key || 'custom')"></div>
+      </div>
+
+      <div class="summary-table">
+        <table *ngIf="selectedDraftPosition; else noPositionSplit">
+          <tr>
+            <td colspan="3">Position: {{ selectedSummary?.position }}</td>
+          </tr>
+          <tr>
+            <td class="label">Type</td>
+            <th class="col-header">Attaquants</th>
+            <th class="col-header">Défenseurs</th>
+          </tr>
+          <tr>
+            <td class="label">Matchs joués</td>
+            <td>{{ selectedSplitSummary?.forwards?.avgGames | number:'1.0-0' }}</td>
+            <td>{{ selectedSplitSummary?.defenders?.avgGames | number:'1.0-0' }}</td>
+          </tr>
+          <tr>
+            <td class="label">Buts</td>
+            <td>{{ selectedSplitSummary?.forwards?.avgGoals | number:'1.1-1' }}</td>
+            <td>{{ selectedSplitSummary?.defenders?.avgGoals | number:'1.1-1' }}</td>
+          </tr>
+          <tr>
+            <td class="label">Passes décisives</td>
+            <td>{{ selectedSplitSummary?.forwards?.avgAssists | number:'1.1-1' }}</td>
+            <td>{{ selectedSplitSummary?.defenders?.avgAssists | number:'1.1-1' }}</td>
+          </tr>
+          <tr>
+            <td class="label">Pourcentage de<br />joueurs réguliers</td>
+            <td>{{ selectedSplitSummary?.forwards?.regularPlayerPct | number:'1.1-1' }}%</td>
+            <td>{{ selectedSplitSummary?.defenders?.regularPlayerPct | number:'1.1-1' }}%</td>
+          </tr>
+        </table>
+        <ng-template #noPositionSplit>
+          <p>Aucune position sélectionnée</p>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend" [class.split-legend]="isPositionSplit">
+    <ng-container *ngIf="!isPositionSplit">
       <div class="legend-item">
         <div class="legend-color standard-deviation"></div>
         <span>Écart-type</span>
@@ -76,14 +114,58 @@
         <div class="legend-color highlight-circle"></div>
         <span>Position sélectionnée</span>
       </div>
+    </ng-container>
+
+    <ng-container *ngIf="isPositionSplit">
+      <div class="legend-item">
+        <div class="legend-color area-forwards"></div>
+        <span>Écart-type attaquants</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color area-defenders"></div>
+        <span>Écart-type défenseurs</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color forwards-line"></div>
+        <span>Moyenne des attaquants</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color defenders-line"></div>
+        <span>Moyenne des défenseurs</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color highlight-circle-forwards"></div>
+        <span>Position sélectionnée (attaquants)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color highlight-circle-defenders"></div>
+        <span>Position sélectionnée (défenseurs)</span>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="tooltip" id="chart-tooltip" style="opacity: 0;">
+    <div class="tooltip-header">Position au repêchage: <span id="draft-position"></span></div>
+    <div class="tooltip-position-type" *ngIf="isPositionSplit">
+      <div class="tooltip-forwards">Attaquants:</div>
+      <div class="tooltip-stat">Nbr moyen de matchs joués: <span id="avg-games-forwards"></span></div>
+      <div class="tooltip-stat">Nbr moyen de buts marqués: <span id="avg-goals-forwards"></span></div>
+      <div class="tooltip-stat">Nbr moyen de passes réalisées: <span id="avg-assists-forwards"></span></div>
+      <div class="tooltip-stat">Probabilité de devenir un joueur régulier: <span
+          id="regular-player-pct-forwards"></span>%</div>
+
+      <div class="tooltip-defenders">Défenseurs:</div>
+      <div class="tooltip-stat">Nbr moyen de matchs joués: <span id="avg-games-defenders"></span></div>
+      <div class="tooltip-stat">Nbr moyen de buts marqués: <span id="avg-goals-defenders"></span></div>
+      <div class="tooltip-stat">Nbr moyen de passes réalisées: <span id="avg-assists-defenders"></span></div>
+      <div class="tooltip-stat">Probabilité de devenir un joueur régulier: <span
+          id="regular-player-pct-defenders"></span>%</div>
     </div>
-  
-    <div class="tooltip" id="chart-tooltip" style="opacity: 0;">
-      <div class="tooltip-header">Position au repêchage: <span id="draft-position"></span></div>
+    <div class="tooltip-all-players" *ngIf="!isPositionSplit">
       <div class="tooltip-stat">Nbr moyen de matchs joués: <span id="avg-games"></span></div>
       <div class="tooltip-stat">Nbr moyen de buts marqués: <span id="avg-goals"></span></div>
       <div class="tooltip-stat">Nbr moyen de passes réalisées: <span id="avg-assists"></span></div>
       <div class="tooltip-stat">Probabilité de devenir un joueur régulier: <span id="regular-player-pct"></span>%</div>
     </div>
   </div>
-  
+</div>
