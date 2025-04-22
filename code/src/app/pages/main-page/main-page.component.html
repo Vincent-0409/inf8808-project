@@ -106,12 +106,18 @@
 
   <!-- Visualisation 4 : Heatmap -->
   <mat-card>
-    <mat-card-title>Visualisation 4 - Carte de chaleur</mat-card-title>
+    <mat-card-title>Évolution temporelle de la corrélation entre le rang de repêchage et les performances des joueurs</mat-card-title>
     <mat-card-content>
       <p>
-        Cette carte de chaleur montre la corrélation entre le rang de repêchage et les performances (points, buts,
-        passes, matchs joués) pour chaque année de 1963 à 2018. Les couleurs (vert pour positif, rouge pour négatif)
-        indiquent la force de la corrélation.
+        Cette carte de chaleur illustre, pour chaque année entre 1963 et 2018, la corrélation entre le rang de repêchage et quatre statistiques de performance des joueurs: buts, passes, points et matchs joués. La couleur encode la force de la corrélation de Spearman: plus elle est foncée, plus la corrélation est forte (vert pour une corrélation positive, magenta pour une négative).
+      </p>
+      <p>
+        Une forte corrélation indique que les joueurs repêchés tôt performent généralement mieux que ceux repêchés plus tard. Cela reflète des choix de repêchage plus judicieux et suggère que le rang est un bon indicateur de la performance future.
+      </p>
+      <p>
+        On observe une tendance marquée entre 2009 et 2018, où la corrélation moyenne pour toutes les statistiques augmente (entre 0.4 et 0.6). Cette évolution pourrait s'expliquer par l'intégration croissante des données avancées et des technologies d'analyse dans le processus de repêchage de la LNH.</p>
+      <p>
+        <i>À noter : les années antérieures à 1969 affichent des corrélations à interpréter avec prudence, car elles reposent sur un très faible nombre de joueurs répondant aux critères de sélection (ex. : seulement 2 en 1965, 3 en 1967, 5 en 1963, etc.), ce qui peut biaiser les résultats.</i>
       </p>
       <app-heatmap></app-heatmap>
     </mat-card-content>
