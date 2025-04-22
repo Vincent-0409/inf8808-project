@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, filter, from, shareReplay } from 'rxjs';
+import { Observable, from, shareReplay } from 'rxjs';
 import * as d3 from 'd3';
 
 export interface DraftPlayer {
@@ -38,6 +38,7 @@ export class DataPreprocessingService {
 
   constructor(private http: HttpClient) { }
 
+  // Loads and parses the draft CSV data, caches the result
   loadDraftData(): Observable<DraftPlayer[]> {
     if (!this.draftData) {
       this.draftData = from(d3.csv(this.dataPath, this.parseRow)).pipe(shareReplay(1));
@@ -45,6 +46,7 @@ export class DataPreprocessingService {
     return this.draftData;
   }
 
+  // Parses a row from the CSV into a DraftPlayer object
   private parseRow(d: any): DraftPlayer {
     return {
       id: +d.id,
@@ -73,19 +75,22 @@ export class DataPreprocessingService {
     };
   }
 
+  // Filters players by a draft year range
   filterPlayersByDraftYear(players: DraftPlayer[], minYear: number, maxYear: number): DraftPlayer[] {
     return players.filter(p => p.year >= minYear && p.year <= maxYear);
   }
 
+  // Filters players by a list of positions
   filterPlayersByPosition(players: DraftPlayer[], positions: string[]): DraftPlayer[] {
     return players.filter(p => positions.includes(p.position));
   }
   
-  // ecq un gamesThreshold de 300 est bon?
+  // Checks if a player is considered a regular based on games played
   isRegularPlayer(player: DraftPlayer, gamesThreshold: number = 300): boolean {
     return player.games_played !== null && player.games_played >= gamesThreshold;
   }
 
+  // Calculates per-game scoring stats for a player
   calculatePerGameStats(player: DraftPlayer): { 
     goalsPerGame: number; 
     assistsPerGame: number; 
@@ -103,12 +108,12 @@ export class DataPreprocessingService {
     };
   }
 
-  // for heatmap
+  // Filters out goalies from the player list
   filterGoalies(players: DraftPlayer[]): DraftPlayer[] {
     return players.filter(p => p.position !== 'G');
   }
 
-  // for heatmap
+  // Groups players by their draft year
   groupPlayersByYear(players: DraftPlayer[]): Record<number, DraftPlayer[]> {
     return players.reduce((acc, player) => {
       if (!acc[player.year]) {
@@ -119,19 +124,16 @@ export class DataPreprocessingService {
     }, {} as Record<number, DraftPlayer[]>);
   }
 
-  // for heatmap
+  // Sorts and ranks players by a given stat in descending order
   rankPlayersByStat(players: DraftPlayer[], stat: keyof DraftPlayer): DraftPlayer[] {
     return [...players]
       .filter(p => p[stat] !== null)
       .sort((a, b) => (b[stat] as number) - (a[stat] as number));
   }
 
-  // for heatmap
+  // Calculates the Spearman rank correlation between two arrays
   calculateSpearmanCorrelation(x: number[], y: number[]): number {
-    if (x.length !== y.length || x.length === 0) {
-      console.log("shits offfffffffffffffffffffffffffffff")
-      return 0;
-    }
+    if (x.length !== y.length || x.length === 0) { return 0;}
     
     const n = x.length;
     const rankDiffs = x.map((_, i) => (x[i] - y[i]) ** 2);
@@ -140,51 +142,7 @@ export class DataPreprocessingService {
     return 1 - ((6 * sumDiffs) / (n * (n ** 2 - 1)));
   }
 
-  // for heatmap
-  // getSpearmanCorrelationByYear(players: DraftPlayer[]): { year: number; stat: string; correlation: number }[] {
-  //   const filteredPlayersByYear = this.filterPlayersByDraftYear(players, 1963, 2018);
-  //   const filteredPlayers = this.filterGoalies(filteredPlayersByYear);
-  //   console.log("without goalie", filteredPlayers);
-
-  //   const groupedByYear = this.groupPlayersByYear(filteredPlayers);
-  //   console.log("transformed to by year", groupedByYear);
-  
-  //   const stats = ['games_played', 'goals', 'assists', 'points'] as const;
-  //   let results: { year: number; stat: string; correlation: number }[] = [];
-
-  //   Object.entries(groupedByYear).forEach(([year, yearPlayers]) => {
-  //     console.log("Year: ", year)
-  //     stats.forEach(stat => {
-  //       console.log("stat: ", stat)
-  //       // Get only players who have non-null stat values
-  //       const statRankedPlayers = this.rankPlayersByStat(yearPlayers, stat);
-  //       console.log("statRankedplayers:", statRankedPlayers)
-  
-  //       // Extract their overall_pick values and rank those
-  //       const draftRankedPlayers = [...statRankedPlayers]
-  //         .sort((a, b) => (a.overall_pick as number) - (b.overall_pick as number));
-  //       console.log("ranked draft picks:", draftRankedPlayers)
-  
-  //       // Build the ranks for Spearman
-  //       const statRanks = statRankedPlayers.map((_, i) => i + 1);
-  //       console.log("statranks: ", statRanks)
-  //       const draftRanks = statRankedPlayers.map(player =>
-  //         draftRankedPlayers.findIndex(p => p.id === player.id) + 1
-  //       );
-  //       console.log("draftranks: ", draftRanks)
-  
-  //       const correlation = this.calculateSpearmanCorrelation(draftRanks, statRanks);
-  //       results.push({ year: Number(year), stat, correlation });
-  //     });
-  //   });
-  
-  //   return results;
-  // }
-
-  // for heatmap
-  // TODO: 
-  // Maybe filter out the correlations for years or stats of years that 
-  // have fewer than a set number of samples used for calculation.
+  // Computes Spearman correlation by year for several performance stats
   getSpearmanCorrelationByYear(players: DraftPlayer[]): { year: number; stat: string; correlation: number; nb_players_considered: number; }[] {
     const filteredPlayersByYear = this.filterPlayersByDraftYear(players, 1963, 2018);
     const filteredPlayers = this.filterGoalies(filteredPlayersByYear);
@@ -207,17 +165,10 @@ export class DataPreprocessingService {
   
         const correlation = this.calculateSpearmanCorrelation(draftRanks, statRanks);
   
-        // console.log(`Year: ${year}, Stat: ${stat}`);
-        // console.log("Stat Ranks:", statRanks);
-        // console.log("Draft Ranks (re-ranked picks):", draftRanks);
-        // console.log("Correlation:", correlation);
-        // console.log("-----------------------------");
-  
         results.push({ year: Number(year), stat, correlation,  nb_players_considered });
       });
     });
   
     return results;
   }
-  
 }
