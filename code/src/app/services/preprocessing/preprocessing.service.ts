@@ -119,7 +119,7 @@ export class DataPreprocessingService {
    * Assign a draft year to a 5-year group (e.g. "2000-2004").
    * This is used to group players visually in the histogram by draft era.
    */
-  private getYearGroup(year: number): string {
+  public getYearGroup(year: number): string {
     const base = 1963;
     const idx = Math.floor((year - base) / 5);
     const start = base + idx * 5;
