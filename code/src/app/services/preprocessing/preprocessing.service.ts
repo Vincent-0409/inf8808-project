@@ -29,6 +29,14 @@ export interface DraftPlayer {
   point_shares: number | null;
 }
 
+export interface HistogramData {
+  year: number;
+  nationality: string;
+  age: number;
+  stat: number;
+  yearGroup: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -41,11 +49,12 @@ export class DataPreprocessingService {
   // Loads and parses the draft CSV data, caches the result
   loadDraftData(): Observable<DraftPlayer[]> {
     if (!this.draftData) {
-      this.draftData = from(d3.csv(this.dataPath, this.parseRow)).pipe(shareReplay(1));
+      this.draftData = from(d3.csv(this.dataPath, this.parseRow)).pipe(
+        shareReplay(1)
+      );
     }
     return this.draftData;
   }
-
   // Parses a row from the CSV into a DraftPlayer object
   private parseRow(d: any): DraftPlayer {
     return {
@@ -73,6 +82,49 @@ export class DataPreprocessingService {
       goals_against_average: d.goals_against_average ? +d.goals_against_average : null,
       point_shares: d.point_shares ? +d.point_shares : null,
     };
+  }
+
+  /**
+   * Transform a list of draft players into structured histogram data.
+   * For each player, this computes the per-game stat (based on selected metric),
+   * filters out those without games played or invalid stats,
+   * and assigns them to a 5-year group for visualization.
+   */
+  prepareHistogramData(
+    players: DraftPlayer[],
+    metric: 'points' | 'goals' | 'assists'
+  ): HistogramData[] {
+    return players
+      .map(p => {
+        const gp = p.games_played ?? 0;
+        if (gp === 0) return null;
+        let stat = 0;
+        switch (metric) {
+          case 'points': stat = (p.points ?? 0) / gp; break;
+          case 'goals': stat = (p.goals ?? 0) / gp; break;
+          case 'assists': stat = (p.assists ?? 0) / gp; break;
+        }
+        stat = Math.round(stat * 100) / 100;
+        return {
+          year: p.year,
+          nationality: p.nationality,
+          age: p.age,
+          stat,
+          yearGroup: this.getYearGroup(p.year)
+        } as HistogramData;
+      })
+      .filter((d): d is HistogramData => d !== null && d.stat > 0);
+  }
+  /**
+   * Assign a draft year to a 5-year group (e.g. "2000-2004").
+   * This is used to group players visually in the histogram by draft era.
+   */
+  private getYearGroup(year: number): string {
+    const base = 1963;
+    const idx = Math.floor((year - base) / 5);
+    const start = base + idx * 5;
+    const end = Math.min(start + 4, new Date().getFullYear());
+    return `${start}-${end}`;
   }
 
   // Filters players by a draft year range
