@@ -85,87 +85,134 @@ export class ScatterPlotComponent implements AfterViewInit {
       .text('Points accumulés en saison régulière');
   }
 
-  /**
-   * Draws or updates:
-   * - the X-axis
-   * - the scatter points (with transition)
-   * - highlights champions by bringing them to the front
-   */
-  updateChart(): void {
-    // 1) Compute new X-scale based on selected metric
-    const maxX = d3.max(this.chartData, d => this.useTop5 ? d.top5Count : d.draftCount) || 1;
-    const xScale = d3.scaleLinear()
-      .domain([0, maxX])
-      .range([0, this.width]);
+/**
+ * Draws or updates:
+ * - the X-axis
+ * - the scatter points 
+ * - highlights champions by bringing them to the front
+ */
+updateChart(): void {
+  // 1) Compute new X-scale based on selected metric (first-round vs top-5)
+  const maxX = d3.max(this.chartData, d => this.useTop5 ? d.top5Count : d.draftCount) || 1;
+  const xScale = d3.scaleLinear()
+    .domain([0, maxX])
+    .range([0, this.width]);
 
-    // 2) Configure X-axis with integer ticks
-    //    tickSizeInner ensures visible tick marks; tickSizeOuter hides end ticks if desired
-    const xAxis = d3.axisBottom<number>(xScale)
-      .tickValues(d3.range(0, maxX + 1, 1))
-      .tickFormat(d3.format('d'))
-      .tickSizeInner(6)
-      .tickSizeOuter(0);
+  // 2) Configure X-axis with integer ticks
+  const xAxis = d3.axisBottom<number>(xScale)
+    .tickValues(d3.range(0, maxX + 1, 1))
+    .tickFormat(d3.format('d'))
+    .tickSizeInner(6)
+    .tickSizeOuter(0);
 
-    // Select or create X-axis group
-    let xGroup = this.svg.select<SVGGElement>('.x-axis');
-    if (xGroup.empty()) {
-      xGroup = this.svg.append('g')
-        .attr('class', 'x-axis')
-        .attr('transform', `translate(0, ${this.height})`);
-    }
+  // 3) Select or create the X-axis group
+  let xGroup = this.svg.select<SVGGElement>('.x-axis');
+  if (xGroup.empty()) {
+    xGroup = this.svg.append('g')
+      .attr('class', 'x-axis')
+      .attr('transform', `translate(0, ${this.height})`);
+  }
+  xGroup.call(xAxis);                // draw ticks and labels
+  xGroup.select('.domain').remove(); // remove default axis line
 
-    // Call the axis generator to (re)draw ticks and labels
-    xGroup.call(xAxis);
+  // 4) Redraw custom horizontal baseline
+  xGroup.selectAll('line.baseline').remove();
+  xGroup.append('line')
+    .attr('class', 'baseline')
+    .attr('x1', 0).attr('y1', 0)
+    .attr('x2', this.width).attr('y2', 0)
+    .attr('stroke', '#000');
 
-    // Remove only the default domain path, not the tick lines
-    xGroup.select('.domain').remove();
+  // 5) Update or create X-axis label
+  let xLabel = this.svg.select<SVGTextElement>('.x-title');
+  if (xLabel.empty()) {
+    xLabel = this.svg.append('text')
+      .attr('class', 'x-title')
+      .attr('text-anchor', 'middle')
+      .attr('y', this.height + 40);
+  }
+  xLabel
+    .attr('x', this.width / 2)
+    .text(this.useTop5
+      ? 'Nombre de joueurs dans le Top 5'
+      : 'Nombre de joueurs de première ronde');
 
-    // Add a custom horizontal baseline for clarity
-    xGroup.append('line')
-      .attr('x1', 0).attr('y1', 0)
-      .attr('x2', this.width).attr('y2', 0)
-      .attr('stroke', '#000');
+  // 6) Prepare Y-scale for point positioning
+  const maxPts = d3.max(this.chartData, d => d.points) || 1;
+  const yScale = d3.scaleLinear()
+    .domain([20, maxPts])
+    .range([this.height, 0]);
 
-    // 3) Update X-axis label
-    let xLabel = this.svg.select<SVGTextElement>('.x-title');
-    if (xLabel.empty()) {
-      xLabel = this.svg.append('text')
-        .attr('class', 'x-title')
-        .attr('text-anchor', 'middle')
-        .attr('y', this.height + 40);
-    }
-    xLabel
-      .attr('x', this.width / 2)
-      .text(this.useTop5
-        ? 'Nombre de joueurs dans le Top 5'
-        : 'Nombre de joueurs de première ronde');
+  // 7) Data-join for scatter points, keyed by season+teamAbbr
+  const circles = this.svg.selectAll<SVGCircleElement, ScatterData>('circle')
+    .data(this.chartData, d => d.season + d.teamAbbr);
 
-    // 4) Data-join for scatter points, keyed by season+teamAbbr
-    const circles = this.svg.selectAll<SVGCircleElement, ScatterData>('circle')
-      .data(this.chartData, d => d.season + d.teamAbbr);
+  circles.exit().remove(); // remove old points
 
-    // Remove outdated circles
-    circles.exit().remove();
+  // 8) Transition existing circles to new X positions
+  circles.transition().duration(500)
+    .attr('cx', d => xScale(this.useTop5 ? d.top5Count : d.draftCount));
 
-    // Transition existing circles to new X positions
-    circles.transition().duration(500)
-      .attr('cx', d => xScale(this.useTop5 ? d.top5Count : d.draftCount));
+  // 9) Append new circles
+  const enter = circles.enter().append('circle')
+    .attr('r', 3)
+    .attr('fill', d => d.isChampion ? this.championColor : 'black')
+    .attr('cx', d => xScale(this.useTop5 ? d.top5Count : d.draftCount))
+    .attr('cy', d => yScale(d.points));
 
-    // Y-scale for point positioning
-    const maxPts = d3.max(this.chartData, d => d.points) || 1;
-    const yScale = d3.scaleLinear()
-      .domain([20, maxPts])
-      .range([this.height, 0]);
+  // 10) Merge enter + update to attach hover/tooltip
+  const containerNode = document.getElementById('chartContainer')!;
+  enter.merge(circles as any)
+    .on('mouseover', (event, d) => {
+      // enlarge circle
+      d3.select(event.currentTarget as SVGCircleElement)
+        .transition().duration(100)
+        .attr('r', 6);
 
-    // Append new circles
-    circles.enter().append('circle')
-      .attr('r', 3).attr('fill', d => d.isChampion ? this.championColor : 'black')
-      .attr('cx', d => xScale(this.useTop5 ? d.top5Count : d.draftCount))
-      .attr('cy', d => yScale(d.points));
+      // compute mouse position relative to chartContainer
+      const [x, y] = d3.pointer(event, containerNode);
 
-    // 5) Bring champion points to the front layer
+      // build tooltip
+      let html = `<strong>${d.teamFullName}</strong><br/>`;
+      if (d.isChampion) {
+        html += `<span style="color:${this.championColor}; font-weight:bold;">Champion de la Coupe Stanley</span><br/>`;
+      }
+      html +=
+        `Saison : ${d.season}<br/>` +
+        `Points en saison régulière : ${d.points}<br/>` +
+        `Nombre de joueurs repêché en 1ʳᵉ ronde : ${d.draftCount}<br/>` +
+        `Nombre de joueurs dans le Top 5 : ${d.top5Count}`;
+
+      // show & populate tooltip
+      d3.select('#chartTooltip')
+        .style('left', `${x + 10}px`)
+        .style('top',  `${y - 28}px`)
+        .style('opacity', 1)
+        .html(html);
+    })
+    .on('mousemove', event => {
+      // reposition tooltip on move
+      const [x, y] = d3.pointer(event, containerNode);
+      d3.select('#chartTooltip')
+        .style('left', `${x + 10}px`)
+        .style('top',  `${y - 28}px`);
+    })
+    .on('mouseout', event => {
+      // restore circle size
+      d3.select(event.currentTarget as SVGCircleElement)
+        .transition().duration(100)
+        .attr('r', 3);
+
+      // hide tooltip
+      d3.select('#chartTooltip')
+        .style('opacity', 0);
+    });
+
+    // 11) Bring champion points to the front layer
     this.svg.selectAll('circle')
-      .filter(function() { return d3.select(this).attr('fill') === '#FF8C00'; })
+      .filter(function() {
+        return d3.select(this).attr('fill') === '#FF8C00';
+      })
       .raise();
   }
 
