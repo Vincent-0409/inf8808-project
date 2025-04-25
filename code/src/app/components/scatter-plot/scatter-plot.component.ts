@@ -76,6 +76,22 @@ export class ScatterPlotComponent implements AfterViewInit {
       .attr('x2', 0).attr('y2', yScale(maxPts))
       .attr('stroke', '#000');
 
+    // Add a "break" marker on the Y-axis ---
+    const breakSize = 6;          // size of the zigzag
+    const y0 = yScale(20);        // vertical position where the break occurs
+
+    // Create a small zigzag path with three segments
+    const breakPath = d3.path();
+    breakPath.moveTo(-breakSize, y0 - breakSize);
+    breakPath.lineTo( breakSize, y0        );
+    breakPath.lineTo(-breakSize, y0 + breakSize);
+
+    yGroup.append('path')
+      .attr('d', breakPath.toString())
+      .attr('stroke', '#000')
+      .attr('stroke-width', 2)
+      .attr('fill', 'none');
+
     // Y-axis label
     this.svg.append('text')
       .attr('transform', 'rotate(-90)')
