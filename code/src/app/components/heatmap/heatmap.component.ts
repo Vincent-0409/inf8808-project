@@ -213,38 +213,48 @@ export class HeatmapComponent implements AfterViewInit {
   }
 
   
-  // Sets mouse event handlers for rectangle tooltips and styling on hover.
+  // Sets mouse event handlers for heatmap cells to show/hide and position the tooltip
   private setRectHandler(): void {
     const tooltip = d3.select('#tooltip-heatmap');
-  
+
     d3.selectAll<SVGRectElement, HeatmapData>('.cell')
-      .on('mouseover', (event, d: HeatmapData) => {
+      // On mouseover: populate and show tooltip, highlight axes ticks, add cell stroke
+      .on('mouseover', (event, d) => {
+        // Get [x, y] relative to the heatmap container
+        const [x, y] = d3.pointer(event, d3.select('#heatmap').node() as HTMLElement);
+
         tooltip
           .html(`
             <strong>Année :</strong> ${d.year}<br/>
             <strong>Statistique :</strong> ${this.getStatLabel(d.stat)}<br/>
             <strong>Corrélation :</strong> ${d.correlation.toFixed(2)}
           `)
-          .style('left', `${event.clientX - 69}px`)
-          .style('top', `${event.clientY - 160}px`)
+          // Offset a few pixels so the tooltip doesn't overlap the cell
+          .style('left', `${x + 10}px`)
+          .style('top',  `${y + 10}px`)
           .style('opacity', 1);
 
+        // Bold the corresponding X and Y axis tick labels
         this.selectTicks(d.stat, d.year);
-  
+
+        // Raise this cell and give it a dark border on hover
         d3.select(event.currentTarget as SVGRectElement)
           .raise()
           .attr('stroke', 'rgb(69, 69, 69)')
           .attr('stroke-width', 2);
       })
+      // On mousemove: update tooltip position as the mouse moves over the cell
       .on('mousemove', (event) => {
+        const [x, y] = d3.pointer(event, d3.select('#heatmap').node() as HTMLElement);
         tooltip
-          .style('left', `${event.clientX - 69}px`)
-          .style('top', `${event.clientY - 160}px`);
+          .style('left', `${x + 10}px`)
+          .style('top',  `${y + 10}px`);
       })
+      // On mouseout: hide tooltip, remove highlights, and clear cell border
       .on('mouseout', (event) => {
         tooltip.style('opacity', 0);
         this.unselectTicks();
-  
+
         d3.select(event.currentTarget as SVGRectElement)
           .attr('stroke', 'none')
           .attr('stroke-width', null);
