@@ -9,6 +9,7 @@
   p {
     font-size: 1.2em;
     line-height: 1.5em;
+    text-align: justify;
   }
 
   .title {
@@ -59,9 +60,9 @@
     align-items: center;
 
     > app-scatter-plot {
-      width: 70%;
+      width: 65%;
     }
     > p {
-      width: 30%;
+      width: 35%;
     }
   }
