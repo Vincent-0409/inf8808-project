@@ -159,13 +159,7 @@ export class ScatterPlotComponent implements AfterViewInit {
 
     // Append new circles
     circles.enter().append('circle')
-      .attr('r', 3)
-      .attr('fill', d => {
-        const year = +d.season.slice(0, 4);
-        return (this.preprocessing as any).nhlChampions?.[year] === d.teamFullName
-          ? this.championColor
-          : 'black';
-      })
+      .attr('r', 3).attr('fill', d => d.isChampion ? this.championColor : 'black')
       .attr('cx', d => xScale(this.useTop5 ? d.top5Count : d.draftCount))
       .attr('cy', d => yScale(d.points));
 

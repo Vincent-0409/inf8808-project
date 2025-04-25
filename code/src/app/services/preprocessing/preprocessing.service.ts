@@ -42,6 +42,7 @@ export interface ScatterData {
   draftCount: number;
   top5Count: number;
   points: number;
+  isChampion: boolean;
 }
 
 /**
@@ -66,6 +67,7 @@ interface SkaterSet {
 })
 export class DataPreprocessingService {
   private draftCache$?: Observable<DraftPlayer[]>;
+  private championsCache$?: Observable<Record<string, string>[]>;
 
   /** Map of team abbreviations to full names */
   private readonly nhlTeams: { [abbr: string]: string } = {
@@ -181,14 +183,31 @@ export class DataPreprocessingService {
   }
 
   /**
+   * Load and parse champions.csv (season, team)
+   */
+  loadChampionsData(): Observable<Record<string, string>[]> {
+    if (!this.championsCache$) {
+      this.championsCache$ = from(
+        d3.csv('assets/data/champions.csv') as Promise<Record<string, string>[]> 
+      ).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.championsCache$;
+  }
+
+  /**
    * Build the full ScatterData array by combining:
    * 1) draft picks
    * 2) season standings
    * 3) skater rosters by year
+   * 4) champions data
    */
   getScatterData(): Observable<ScatterData[]> {
-    const draft$   = this.loadDraftData();
-    const seasons$ = this.loadSeasonsData();
+    const draft$     = this.loadDraftData();
+    const seasons$   = this.loadSeasonsData();
+    const champions$ = this.loadChampionsData();
+
 
     // Load all skater CSVs in parallel; result is an array of row arrays
     const years = Array.from({ length: 2021 - 2008 + 1 }, (_, i) => 2008 + i);
@@ -196,8 +215,16 @@ export class DataPreprocessingService {
       years.map(year => this.loadSkatersByYear(year))
     );
 
-    return forkJoin({ draft: draft$, seasons: seasons$, skaterRows: skaterArrays$ }).pipe(
-      map(({ draft, seasons, skaterRows }) => {
+    return forkJoin({ draft: draft$, seasons: seasons$, skaterRows: skaterArrays$, champions: champions$ }).pipe(
+      map(({ draft, seasons, skaterRows, champions }) => {
+        // Map champions data to a lookup by season string
+        console.log(champions)
+        const champMap = new Map<string,string>();
+        champions.forEach(c => {
+          const seasonKey = this.convertYearToSeason(+c['season']);
+          champMap.set(seasonKey, c['team']);
+        });
+
         // 1) Map player name → overall_pick
         const pickMap = new Map<string,number>();
         draft.forEach(p => {
@@ -241,13 +268,15 @@ export class DataPreprocessingService {
           Object.entries(row).forEach(([abbr, pts]) => {
             if (abbr === 'Season' || pts === '') return;
             const key = `${season}_${abbr}`;
+            const fullName = this.nhlTeams[abbr];
             result.push({
               season,
               teamAbbr:     abbr,
-              teamFullName: this.nhlTeams[abbr],
+              teamFullName: fullName,
               draftCount:   draftCounts[key]?.size  || 0,
               top5Count:    top5Counts[key]?.size   || 0,
-              points:       +pts
+              points:       +pts,
+              isChampion:   champMap.get(season) === fullName
             });
           });
         });
