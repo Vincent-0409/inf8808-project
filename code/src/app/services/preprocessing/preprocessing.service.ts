@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, from, shareReplay } from 'rxjs';
 import * as d3 from 'd3';
+import { Observable, forkJoin, from } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 
+/**
+ * Raw draft player as parsed from nhldraft.csv
+ */
 export interface DraftPlayer {
   id: number;
   year: number;
@@ -29,6 +32,22 @@ export interface DraftPlayer {
   point_shares: number | null;
 }
 
+/**
+ * Data structure for each point in the scatter plot
+ */
+export interface ScatterData {
+  season: string;
+  teamAbbr: string;
+  teamFullName: string;
+  draftCount: number;
+  top5Count: number;
+  points: number;
+  isChampion: boolean;
+}
+
+/**
+ * Data structure for each point in the histogram
+ */
 export interface HistogramData {
   year: number;
   nationality: string;
@@ -37,51 +56,239 @@ export interface HistogramData {
   yearGroup: string;
 }
 
+/** Intermediate structure pairing a season year with its skater rows */
+interface SkaterSet {
+  year: number;
+  rows: any[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class DataPreprocessingService {
-  private draftData: Observable<DraftPlayer[]> | null = null;
-  private dataPath = 'assets/data/nhldraft.csv';
+  private draftCache$?: Observable<DraftPlayer[]>;
+  private championsCache$?: Observable<Record<string, string>[]>;
 
-  constructor(private http: HttpClient) { }
+  /** Map of team abbreviations to full names */
+  private readonly nhlTeams: { [abbr: string]: string } = {
+    ANA: "Anaheim Ducks",
+    BOS: "Boston Bruins",
+    BUF: "Buffalo Sabres",
+    CAR: "Carolina Hurricanes",
+    CBJ: "Columbus Blue Jackets",
+    CGY: "Calgary Flames",
+    CHI: "Chicago Blackhawks",
+    COL: "Colorado Avalanche",
+    DAL: "Dallas Stars",
+    DET: "Detroit Red Wings",
+    EDM: "Edmonton Oilers",
+    FLA: "Florida Panthers",
+    LAK: "Los Angeles Kings",
+    MIN: "Minnesota Wild",
+    MTL: "Montreal Canadiens",
+    NJD: "New Jersey Devils",
+    NSH: "Nashville Predators",
+    NYI: "New York Islanders",
+    NYR: "New York Rangers",
+    OTT: "Ottawa Senators",
+    PHI: "Philadelphia Flyers",
+    PIT: "Pittsburgh Penguins",
+    SEA: "Seattle Kraken",
+    SJS: "San Jose Sharks",
+    STL: "St. Louis Blues",
+    TBL: "Tampa Bay Lightning",
+    TOR: "Toronto Maple Leafs",
+    VAN: "Vancouver Canucks",
+    VEG: "Vegas Golden Knights",
+    WPG: "Winnipeg Jets",
+    WSH: "Washington Capitals"
+  };
 
-  // Loads and parses the draft CSV data, caches the result
+  /** Stanley Cup champions by season start year */
+  private readonly nhlChampions: { [year: number]: string } = {
+    2008: "Detroit Red Wings",
+    2009: "Pittsburgh Penguins",
+    2010: "Chicago Blackhawks",
+    2011: "Boston Bruins",
+    2012: "Los Angeles Kings",
+    2013: "Chicago Blackhawks",
+    2014: "Los Angeles Kings",
+    2015: "Chicago Blackhawks",
+    2016: "Pittsburgh Penguins",
+    2017: "Pittsburgh Penguins",
+    2018: "Washington Capitals",
+    2019: "St. Louis Blues",
+    2020: "Tampa Bay Lightning",
+    2021: "Tampa Bay Lightning"
+  };
+
+  constructor() { }
+
+  /**
+   * Load and parse nhldraft.csv.
+   * Caches the result so multiple subscribers share the same data.
+   */
   loadDraftData(): Observable<DraftPlayer[]> {
-    if (!this.draftData) {
-      this.draftData = from(d3.csv(this.dataPath, this.parseRow)).pipe(
+    if (!this.draftCache$) {
+      this.draftCache$ = from(
+        d3.csv('assets/data/nhldraft.csv', this.parseDraftRow.bind(this))
+      ).pipe(
         shareReplay(1)
       );
     }
-    return this.draftData;
+    return this.draftCache$;
   }
-  // Parses a row from the CSV into a DraftPlayer object
-  private parseRow(d: any): DraftPlayer {
+
+  /** Parse a single row of nhldraft.csv into a DraftPlayer */
+  private parseDraftRow(row: any): DraftPlayer {
     return {
-      id: +d.id,
-      year: +d.year,
-      overall_pick: +d.overall_pick,
-      team: d.team,
-      player: d.player,
-      nationality: d.nationality,
-      position: d.position,
-      age: +d.age,
-      to_year: d.to_year ? +d.to_year : null,
-      amateur_team: d.amateur_team,
-      games_played: d.games_played ? +d.games_played : null,
-      goals: d.goals ? +d.goals : null,
-      assists: d.assists ? +d.assists : null,
-      points: d.points ? +d.points : null,
-      plus_minus: d.plus_minus ? +d.plus_minus : null,
-      penalties_minutes: d.penalties_minutes ? +d.penalties_minutes : null,
-      goalie_games_played: d.goalie_games_played ? +d.goalie_games_played : null,
-      goalie_wins: d.goalie_wins ? +d.goalie_wins : null,
-      goalie_losses: d.goalie_losses ? +d.goalie_losses : null,
-      goalie_ties_overtime: d.goalie_ties_overtime ? +d.goalie_ties_overtime : null,
-      save_percentage: d.save_percentage ? +d.save_percentage : null,
-      goals_against_average: d.goals_against_average ? +d.goals_against_average : null,
-      point_shares: d.point_shares ? +d.point_shares : null,
+      id: +row.id,
+      year: +row.year,
+      overall_pick: +row.overall_pick,
+      team: row.team,
+      player: row.player,
+      nationality: row.nationality,
+      position: row.position,
+      age: +row.age,
+      to_year: row.to_year ? +row.to_year : null,
+      amateur_team: row.amateur_team,
+      games_played: row.games_played ? +row.games_played : null,
+      goals: row.goals ? +row.goals : null,
+      assists: row.assists ? +row.assists : null,
+      points: row.points ? +row.points : null,
+      plus_minus: row.plus_minus ? +row.plus_minus : null,
+      penalties_minutes: row.penalties_minutes ? +row.penalties_minutes : null,
+      goalie_games_played: row.goalie_games_played ? +row.goalie_games_played : null,
+      goalie_wins: row.goalie_wins ? +row.goalie_wins : null,
+      goalie_losses: row.goalie_losses ? +row.goalie_losses : null,
+      goalie_ties_overtime: row.goalie_ties_overtime ? +row.goalie_ties_overtime : null,
+      save_percentage: row.save_percentage ? +row.save_percentage : null,
+      goals_against_average: row.goals_against_average ? +row.goals_against_average : null,
+      point_shares: row.point_shares ? +row.point_shares : null,
     };
+  }
+
+  /** Load seasons.csv as array of records */
+  private loadSeasonsData(): Observable<Record<string,string>[]> {
+    return from(
+      d3.csv('assets/data/seasons.csv') as Promise<Record<string,string>[]>
+    );
+  }
+
+  /** Load skaters_{year}.csv as array of records */
+  private loadSkatersByYear(year: number): Observable<Record<string,string>[]> {
+    return from(
+      d3.csv(`assets/data/skaters_${year}.csv`) as Promise<Record<string,string>[]>
+    );
+  }
+
+  /**
+   * Load and parse champions.csv (season, team)
+   */
+  loadChampionsData(): Observable<Record<string, string>[]> {
+    if (!this.championsCache$) {
+      this.championsCache$ = from(
+        d3.csv('assets/data/champions.csv') as Promise<Record<string, string>[]> 
+      ).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.championsCache$;
+  }
+
+  /**
+   * Build the full ScatterData array by combining:
+   * 1) draft picks
+   * 2) season standings
+   * 3) skater rosters by year
+   * 4) champions data
+   */
+  getScatterData(): Observable<ScatterData[]> {
+    const draft$     = this.loadDraftData();
+    const seasons$   = this.loadSeasonsData();
+    const champions$ = this.loadChampionsData();
+
+
+    // Load all skater CSVs in parallel; result is an array of row arrays
+    const years = Array.from({ length: 2021 - 2008 + 1 }, (_, i) => 2008 + i);
+    const skaterArrays$ = forkJoin(
+      years.map(year => this.loadSkatersByYear(year))
+    );
+
+    return forkJoin({ draft: draft$, seasons: seasons$, skaterRows: skaterArrays$, champions: champions$ }).pipe(
+      map(({ draft, seasons, skaterRows, champions }) => {
+        // Map champions data to a lookup by season string
+        console.log(champions)
+        const champMap = new Map<string,string>();
+        champions.forEach(c => {
+          const seasonKey = this.convertYearToSeason(+c['season']);
+          champMap.set(seasonKey, c['team']);
+        });
+
+        // 1) Map player name → overall_pick
+        const pickMap = new Map<string,number>();
+        draft.forEach(p => {
+          const key = p.player.toLowerCase().trim();
+          pickMap.set(key, p.overall_pick);
+        });
+
+        // 2) Count first-round and top-5 picks per (season, team)
+        const draftCounts: Record<string,Set<string>> = {};
+        const top5Counts:  Record<string,Set<string>> = {};
+
+        skaterRows.forEach((rows, idx) => {
+          const year   = years[idx];
+          const season = this.convertYearToSeason(year);
+          rows.forEach(r => {
+            const team   = (r['team'] || '').trim();
+            const player = (r['name'] || '').trim();
+            if (!team || !player) return;
+
+            const key = `${season}_${team}`;
+            draftCounts[key] ||= new Set<string>();
+            top5Counts[key]  ||= new Set<string>();
+
+            if (!draftCounts[key].has(player)) {
+              const pick = pickMap.get(player.toLowerCase());
+              if (pick != null) {
+                if (pick < 31) draftCounts[key].add(player);
+                if (pick < 5)  top5Counts[key].add(player);
+              }
+            }
+          });
+        });
+
+        // 3) Merge with seasons.csv to produce ScatterData[]
+        const result: ScatterData[] = [];
+        seasons.forEach(row => {
+          const season = row['Season'];
+          const startY = parseInt(season.slice(0,4), 10);
+          if (startY < 2008 || startY > 2021) return;
+
+          Object.entries(row).forEach(([abbr, pts]) => {
+            if (abbr === 'Season' || pts === '') return;
+            const key = `${season}_${abbr}`;
+            const fullName = this.nhlTeams[abbr];
+            result.push({
+              season,
+              teamAbbr:     abbr,
+              teamFullName: fullName,
+              draftCount:   draftCounts[key]?.size  || 0,
+              top5Count:    top5Counts[key]?.size   || 0,
+              points:       +pts,
+              isChampion:   champMap.get(season) === fullName
+            });
+          });
+        });
+
+        return result;
+      })
+    );
+  }
+
+  /** Convert a year (e.g. 2008) into a season string "2008-09" */
+  private convertYearToSeason(year: number): string {
+    return `${year}-${(year + 1).toString().slice(-2)}`;
   }
 
   /**
