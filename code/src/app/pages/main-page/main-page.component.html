@@ -1,92 +1,128 @@
 <mat-toolbar color="primary">
-    <span>Projet INF8808E - Visualisation de données</span>
-  </mat-toolbar>
+  <span>Projet INF8808E - Visualisation de données</span>
+</mat-toolbar>
+
+<div class="content">
+  <!-- Titre -->
+  <h1 class="title">Les performances des joueurs dans la LNH sont-elles à la hauteur de leur classement dans le repêchage?</h1>
   
-  <div class="content">
-    <!-- Introduction -->
-    <mat-card>
-      <mat-card-title>Introduction</mat-card-title>
-      <mat-card-content>
-        <p>
-          Ce projet, réalisé dans le cadre du cours INF8808E - Visualisation de données à Polytechnique Montréal, vise à analyser l’impact du repêchage de la LNH sur les performances des joueurs et des équipes à travers des visualisations interactives.
-        </p>
-        <p>
-          <strong>Équipe :</strong> Loïc Alavoine (2097189), Simon Bachand (2164037), Vincent Bellemare (2118835), Minh Ngoc Do (2110667), Basil Gil (2065948)
-        </p>
-        <p><strong>Professeur :</strong> Thomas Hurtut</p>
-        <p><strong>Date :</strong> 15 avril 2025</p>
-      </mat-card-content>
-    </mat-card>
-  
+  <div class="introduction">
     <!-- Contexte et Objectifs -->
     <mat-card>
-      <mat-card-title>Contexte et Objectifs</mat-card-title>
+      <mat-card-title>Contexte et objectifs</mat-card-title>
       <mat-card-content>
         <p>
-          Le repêchage de la Ligue nationale de hockey (LNH) représente un moment clé pour les franchises, qui mobilisent des ressources importantes pour sélectionner les meilleurs talents. Cependant, le succès des joueurs repêchés demeure imprévisible. Ce projet cherche à répondre à la question centrale : les performances des joueurs dans la LNH sont-elles à la hauteur de leur classement au repêchage ? Nous explorons également des croyances populaires, comme l’idée que les choix de premier tour garantissent le succès, à travers des visualisations interactives.
+          Le repêchage de la Ligue nationale de hockey (LNH) est un moment stratégique où les franchises investissent des ressources considérables pour sélectionner les futurs talents. Pourtant, malgré des outils d’évaluation toujours plus sophistiqués, les résultats restent imprévisibles : certains choix de premier tour déçoivent, tandis que des joueurs de rondes tardives deviennent des étoiles. Ce projet utilise des visualisations interactives pour explorer une question clé : les performances des joueurs en LNH reflètent-elles leur rang de repêchage ? Nous cherchons également à démystifier des croyances, comme la prétendue garantie de succès des premiers choix, en analysant les tendances, les stratégies de sélection et les erreurs récurrentes des équipes. Destiné aux passionnés de hockey, aux amateurs de statistiques sportives et à toute personne curieuse de l’intersection entre données et sport professionnel, ce projet offre une analyse accessible et novatrice pour mieux comprendre les dynamiques du repêchage et optimiser les décisions des franchises.
         </p>
       </mat-card-content>
     </mat-card>
-  
+
     <!-- Description des Données -->
     <mat-card>
-      <mat-card-title>Description des Données</mat-card-title>
+      <mat-card-title>Description des données</mat-card-title>
       <mat-card-content>
         <p>
-          Nos analyses s’appuient sur plusieurs jeux de données, principalement les données du repêchage de la LNH de 1963 à 2022 (disponibles sur Kaggle), ainsi que les statistiques des joueurs et des équipes en saisons régulières et séries éliminatoires (Hockey Reference). Ces données incluent des informations sur 12 050 joueurs, avec des attributs comme le rang de sélection, la nationalité, l’âge, et les performances (buts, passes, matchs joués). Elles permettent d’examiner les tendances et l’impact du repêchage sur le succès individuel et collectif.
+          Nos analyses s’appuient sur plusieurs jeux de données, principalement les données du repêchage de la LNH de 1963
+          à 2022 (disponibles sur <a href="https://www.kaggle.com/datasets/mattop/nhl-draft-hockey-player-data-1963-2022/data" target="_blank" rel="noopener noreferrer">Kaggle</a>), ainsi que les statistiques des joueurs et des équipes en saisons régulières et
+          séries éliminatoires (<a href="https://www.hockey-reference.com/teams/" target="_blank" rel="noopener noreferrer">Hockey Reference</a>). Ces données incluent des informations sur plus de 12 000 joueurs, avec des
+          attributs comme le rang de sélection, la nationalité, l’âge, et les performances (buts, passes, matchs joués) à travers leur carrière respective.
+          Elles permettent d’examiner les tendances et l’impact du repêchage sur le succès individuel et collectif.
         </p>
-      </mat-card-content>
-    </mat-card>
-  
-    <!-- Visualisation 1 : Scatter Plot -->
-    <mat-card>
-      <mat-card-title>Visualisation 1 - Nuage de points</mat-card-title>
-      <mat-card-content>
-        <p>
-          Cette visualisation interactive explore la relation entre le succès des équipes et le nombre de joueurs repêchés en première ronde ou dans le top cinq. Chaque point représente une équipe pour une saison (2008-09 à 2021-22), avec l’axe des x indiquant le nombre de joueurs de première ronde et l’axe des y les points en saison régulière. Les champions de la coupe Stanley sont en jaune.
-        </p>
-        <app-scatter-plot></app-scatter-plot>
-      </mat-card-content>
-    </mat-card>
-  
-    <!-- Visualisation 2 : Small Multiple Line Chart -->
-    <mat-card>
-      <mat-card-title>Visualisation 2 - Graphiques linéaires multiples</mat-card-title>
-      <mat-card-content>
-        <p>
-          Cet ensemble de graphiques linéaires montre l’évolution des statistiques (matchs joués, buts, passes, probabilité de devenir régulier, contribution aux points) selon la position au repêchage (1 à 31 par ronde). Elle aide à identifier les tendances et à évaluer les stratégies de sélection.
-        </p>
-        <app-small-multiples></app-small-multiples>
-      </mat-card-content>
-    </mat-card>
-  
-    <!-- Visualisation 3 : Stacked Dot Histograms -->
-    <mat-card>
-      <mat-card-title>Visualisation 3 - Histogrammes à points superposés</mat-card-title>
-      <mat-card-content>
-        <p>
-          Ce graphique illustre la distribution des statistiques par match (buts, passes, points) des joueurs selon leur année de repêchage (1963-2022), regroupées par tranches de cinq ans, avec des distinctions par nationalité ou âge. Il analyse l’évolution des performances dans le temps.
-        </p>
-        <app-histogram></app-histogram>
-      </mat-card-content>
-    </mat-card>
-  
-    <!-- Visualisation 4 : Heatmap -->
-    <mat-card>
-      <mat-card-title>Visualisation 4 - Carte de chaleur</mat-card-title>
-      <mat-card-content>
-        <p>
-          Cette carte de chaleur montre la corrélation entre le rang de repêchage et les performances (points, buts, passes, matchs joués) pour chaque année de 1963 à 2018. Les couleurs (vert pour positif, rouge pour négatif) indiquent la force de la corrélation.
-        </p>
-        <app-heatmap></app-heatmap>
-      </mat-card-content>
-    </mat-card>
-  
-    <!-- Conclusion -->
-    <mat-card>
-      <mat-card-title>Conclusion</mat-card-title>
-      <mat-card-content>
-        <p>En cours de rédaction.</p>
       </mat-card-content>
     </mat-card>
   </div>
+
+  <!-- Visualisation 1 : Nuage de points -->
+  <mat-card>
+    <mat-card-title>Impact des choix de première ronde et du top cinq sur le succès des équipes de la LNH</mat-card-title>
+    <mat-card-content class="left-align">
+      <app-scatter-plot></app-scatter-plot>
+      <p class="description-scatter-plot">
+        Cette visualisation interactive examine l’impact des choix de repêchage, en particulier ceux de première ronde et du top cinq, sur le succès des équipes de la LNH, évalué par leurs points accumulés en saison régulière. Chaque point correspond à une équipe pour une saison spécifique (2008-09 à 2021-22). Les champions de la Coupe Stanley pour une saison spécifique sont distingués en jaune, les autres équipes en noir.
+        <br>
+        <br>
+        Dans la vue « Joueurs de première ronde », contrairement à la croyance populaire, aucune corrélation claire n’émerge entre le nombre de joueurs repêchés en première ronde et les points accumulés en saison régulière. Cependant, il est possible de remarquer que les équipes championnes (en jaune) ont majoritairement six joueurs ou plus issus de la première ronde, suggérant que, bien que cela n’influence pas directement les points, un plus grand nombre de joueurs de première ronde pourrait favoriser le succès en séries.
+        <br>
+        <br>
+        La vue « Joueurs dans le Top 5 » révèle également un manque de corrélation entre le nombre de joueurs du top cinq et les points accumulés. Fait marquant, la seule équipe comptant plus de six joueurs du top cinq n’atteint qu’un nombre moyen de points (autour de 80), tandis que les champions se concentrent souvent parmi les équipes n'ayant pas plus de trois joueurs de cette catégorie.
+        <br>
+        <br>
+        <strong>Astuce :</strong> Survolez une équipe pour afficher ses statistiques détaillées et comparer les équipes plus précisément.
+      </p>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Visualisation 2 : Small Multiple Line Chart -->
+  <mat-card>
+    <mat-card-title>Tendances des performances des joueurs selon leur rang de repêchage dans la LNH</mat-card-title>
+    <mat-card-content>
+      <p>
+        Cet ensemble de graphiques linéaires montre l’évolution des statistiques (matchs joués, buts, passes,
+        probabilité de devenir régulier, contribution aux points) selon la position au repêchage entre les années 1963 et 2022.
+        Elle aide à identifier les tendances et à évaluer les stratégies de sélection.
+        <br>
+        <br>
+        On observe des tendances fortes : les joueurs repêchés tôt (notamment en première ronde) jouent plus de matchs,
+        marquent davantage et sont plus souvent des joueurs réguliers. Après la 31e position (fin de la 1re ronde), une
+        chute nette des statistiques est visible, suivie d’une baisse plus graduelle.
+        <br>
+        <br>
+        Cela peut s’expliquer par le fait que les joueurs repêchés tôt sont généralement ceux qui sont perçus comme les meilleurs espoirs disponibles.
+        Ils attirent l’attention des équipes en raison de leurs performances antérieures dans le hockey junior ou international, de leur potentiel à long terme,
+        ou parce qu’ils sont déjà près du niveau LNH. Ces joueurs sont aussi souvent ceux pour lesquels les équipes investissent plus de temps et de ressources en évaluation,
+        afin de minimiser le risque d’erreur avec leurs choix les plus précieux. Cette combinaison de talent perçu, d’intérêt collectif et d’évaluation approfondie
+        contribue à expliquer pourquoi ces joueurs connaissent, en moyenne, plus de succès une fois rendus dans la LNH.
+        <br>
+        <br>
+        Des pics importants apparaissent également dans les graphiques, soulignant qu’un simple rang de différence au repêchage peut entraîner un impact significatif. Par exemple, le 55e rang montre un pic notable à la hausse en ce qui concerne le nombre de matchs disputés, ce qui suggère qu’il s’agit historiquement d’une position avantageuse, potentiellement intéressante à cibler dans le cadre d’un échange. À l’inverse, certains creux visibles dans les données indiquent des positions qui, historiquement, semblent moins prometteuses et pourraient donc être à éviter.
+        <br>
+        <br>
+        <strong>Astuce :</strong> Cliquez sur une position précise pour visualiser ses statistiques détaillées et
+        comparez les profils selon les positions ou les rôles (attaquants/défenseurs).
+      </p>
+      <app-small-multiples></app-small-multiples>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Visualisation 3 : Histogrammes à points superposés -->
+  <mat-card>
+    <mat-card-title>Évolution des performances des joueurs de la LNH par année de repêchage, nationalité et âge</mat-card-title>
+    <mat-card-content>
+      <p>
+        Ce graphique illustre la distribution des statistiques par match (buts, passes, points) des joueurs ayant disputé au moins un match dans la LNH, selon leur année de repêchage (1963-2022), regroupées par tranches de cinq ans. Il permet de comparer ces performances en fonction de la nationalité (Canada, États-Unis, Autre) ou de l’âge au moment du repêchage (18, 19, 20 ans et plus).
+        <br>
+        <br>
+        Dans les premières années, les joueurs de 20 ans et plus sont repêchés bien plus souvent que les joueurs de 18 ou 19 ans, indiquant possiblement une préférence pour des joueurs plus expérimentés. Cette tendance s’inverse au courant des années 1980 alors que les joueurs de 18 et 19 ans deviennent majoritaires, probablement grâce aux nouvelles technologies de dépistage qui permettent d’identifier le potentiel des jeunes talents plus tôt. Parallèlement, on observe une internationalisation progressive : dans les années 1960, les joueurs canadiens prédominent presque exclusivement, mais dès les années 1990, la répartition devient plus équilibrée avec une hausse des joueurs américains et provenant d’autres nationalités, reflétant une diversification des origines dans la LNH. Cela peut s’expliquer par la popularisation croissante du hockey à l’échelle internationale, ainsi que par les efforts accrus de dépistage à l’étranger.
+        <br>
+        <br>
+        De plus, on observe une diminution des performances statistiques des joueurs au fil des années. Aujourd’hui, la plupart des joueurs affichent des statistiques généralement plus faibles qu’auparavant, époque où les performances étaient plus variées et généralement plus élevées. Cette tendance pourrait être due à l’amélioration des gardiens, qui bénéficient désormais d’un bien meilleur équipement et d’un entraînement plus poussé.
+      </p>
+      <app-histogram></app-histogram>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Visualisation 4 : Carte de chaleur -->
+  <mat-card>
+    <mat-card-title>Évolution temporelle de la corrélation entre le rang de repêchage et les performances des joueurs</mat-card-title>
+    <mat-card-content>
+      <p>
+        Cette carte de chaleur illustre, pour chaque année entre 1963 et 2018, la corrélation entre le rang de repêchage et quatre statistiques de performance des joueurs: buts, passes, points et matchs joués. La couleur encode la force de la corrélation de Spearman: plus elle est foncée, plus la corrélation est forte (vert pour une corrélation positive, magenta pour une négative).
+      </p>
+      <p>
+        Une forte corrélation indique que les joueurs repêchés tôt performent généralement mieux que ceux repêchés plus tard. Cela reflète des choix de repêchage plus judicieux et suggère que le rang est un bon indicateur de la performance future.
+      </p>
+      <p>
+        On observe une tendance marquée entre 2009 et 2018, où la corrélation moyenne pour toutes les statistiques augmente (entre 0.4 et 0.6). Cette évolution pourrait s'expliquer par l'intégration croissante des données avancées et des technologies d'analyse dans le processus de repêchage de la LNH. On note également des corrélations relativement élevées entre 1969 et 1972. Cela peut s’expliquer par le fait qu’à cette époque, les équipes repêchaient majoritairement des joueurs plus âgés (20 ans et plus), ce qui facilitait la prédiction de leur rendement futur.
+      <p>
+        <i>À noter : les années antérieures à 1969 affichent des corrélations à interpréter avec prudence, car elles reposent sur un très faible nombre de joueurs repêché qui ont joué dans la LNH, ce qui peut biaiser les résultats.</i>
+      </p>
+      <app-heatmap></app-heatmap>
+    </mat-card-content>
+  </mat-card>
+  <p class="footer">
+    Ce projet a été réalisé par Simon Bachand, Vincent Bellemare, Minh
+    Ngoc Do, Basil Gil et Loïc Alavoine.
+    <br>
+    Le code source du projet est disponible sur <a href="https://github.com/Vincent-0409/inf8808-project" target="_blank" rel="noopener noreferrer">GitHub</a>.
+  </p>
+</div>

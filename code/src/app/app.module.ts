@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HistogramComponent } from './components/histogram/histogram.component';
@@ -13,7 +12,7 @@ import { MaterialPageComponent } from './pages/material-page/material-page.compo
 import { MainPageComponent } from './pages/main-page/main-page.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { ScatterPlotComponent } from './scatter-plot/scatter-plot.component';
+import { ScatterPlotComponent } from './components/scatter-plot/scatter-plot.component';
 
 @NgModule({
   declarations: [
