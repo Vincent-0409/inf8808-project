@@ -1,17 +1,14 @@
 .content {
-    padding-left: 60px;
-    padding-right: 60px;
+    padding-left: 50px;
+    padding-right: 50px;
     padding-top: 20px;
     padding-bottom: 20px;
-    margin: auto;
     background: linear-gradient(0deg, rgb(241 236 255), 35%, rgb(187 213 255 / 98%))
   }
 
   p {
     font-size: 1.2em;
     line-height: 1.5em;
-    // color: #4652b2;
-    // margin-bottom: 20px;
   }
 
   .title {
@@ -22,12 +19,7 @@
   }
 
   .introduction {
-    // text-align: center;
-    // font-size: 1.2em;
-    // margin-bottom: 20px;
-    // color: #4652b2;
     display: flex;
-    // Adjust the wisth between the two columns
     flex-direction: row;
     justify-content: space-between;
 
