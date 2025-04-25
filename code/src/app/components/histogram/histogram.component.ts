@@ -30,7 +30,7 @@ export class HistogramComponent implements AfterViewInit {
   // Margins around the drawing area
   private readonly margin = { top: 20, right: 30, bottom: 50, left: 100 };
   // Total width (95% of viewport) and initial height (recalculated later)
-  private width = window.innerWidth * 0.95;
+  private width = window.innerWidth * 0.92;
   private height = 1200;
 
   // Spacing and size for each circle
